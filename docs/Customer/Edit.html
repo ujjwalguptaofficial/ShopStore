@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>JsStorage Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link href="../materialize/css/materialize.min.css" rel="stylesheet " type="text/css" />
+    <script src="../scripts/jquery.js"></script>
+    <script src="../materialize/js/materialize.min.js"></script>
+    <script src="../scripts/matdialog.min.js"></script>
+    <link href="../Style/matdialog.min.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <ul id="listCustomer" class="dropdown-content">
+        <li><a href="../customer/add.html">Add</a></li>
+        <li><a href="../customer/index.html">List</a></li>
+    </ul>
+    <ul id="listStock" class="dropdown-content">
+        <li><a href="../stock/add.html">Add</a></li>
+        <li><a href="../stock/index.html">List</a></li>
+    </ul>
+    <nav class="nav-extended">
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li><a href="../index.html">Home</a></li>
+                <li class="active"><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+            </ul>
+            <div class="brand-logo center-align">
+                <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
+            </div>
+        </div>
+    </nav>
+    <div class="row">
+        <form class="col s12 m8 l6 xl4 push-s0 push-m2 push-l3 push-xl4 right-alert">
+            <h5 class="#bf360c deep-orange darken-4 color-white padding-10-px center-align">Add Items In Store</h5>
+            <div class="input-field col s12">
+                <input placeholder="Enter Item Name" id="txtName" type="text" class="validate">
+                <label for="txtName" data-error="wrong" data-success="right">Customer Name</label>
+            </div>
+            <div class="input-field col s12">
+                <input id="txtDob" placeholder="Enter date of birth" type="text" class="datepicker validate">
+                <label for="txtDob" data-error="wrong" data-success="right">Date Of Birth</label>
+            </div>
+            <div class="input-field col s12">
+                <input placeholder="Enter Item Quantity" id="txtMobile" type="text" class="validate">
+                <label for="txtMobile" data-error="wrong" data-success="right">Mobile No</label>
+            </div>
+            <div class="input-field col s12">
+                <input placeholder="Enter Item Quantity" id="txtEmail" type="text" class="validate">
+                <label for="txtEmail" data-error="wrong" data-success="right">Email</label>
+            </div>
+            <div class="center-align">
+                <a class="waves-effect waves-light btn" onclick="update();"><i class="material-icons left">done</i>Update</a>
+                <a class="waves-effect waves-light btn"><i class="material-icons left">close</i>Cancel</a>
+            </div>
+        </form>
+    </div>
+    <script src="../scripts/jsvalidator.js"></script>
+    <link href="../style/main.css" rel="stylesheet " type="text/css" />
+    <script src="../Scripts/JsStorage.js"></script>
+    <script src="../Scripts/DbStructure.js"></script>
+    <script src="../Scripts/main.js"></script>
+    <script>
+        var Validator;
+        window.onload = function () {
+            Validator = new JsValidator();
+            getCustomerDetail(Number(getQsValueByName('id')))
+            $('.datepicker').pickadate({
+                selectMonths: true, // Creates a dropdown to control month
+                selectYears: 100 // Creates a dropdown of 15 years to control year
+            });
+        }
+
+        function getCustomerDetail(id) {
+            Db.DbConnection.select({
+                From: 'Customer',
+                Where: {
+                    CustomerId: id
+                }
+            }, function (customer) {
+                $('#txtName').val(customer[0].CustomerName);
+                $('#txtDob').val(customer[0].Dob);
+                $('#txtEmail').val(customer[0].Email);
+                $('#txtMobile').val(customer[0].MobNo);
+            }, function (error) {
+                console.log(error);
+                alert('Error Occured');
+            })
+        }
+
+        function update() {
+            var ECustomerName = $('#txtName'),
+                ECustomerDob = $('#txtDob'),
+                ECustomerMob = $('#txtMobile'),
+                ECustomerEmail = $('#txtEmail'),
+                ErrorOccured = false;
+
+            if (Validator.isInvalid(ECustomerName.val())) {
+                ECustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+                ErrorOccured = true;
+            }
+            if (Validator.isInvalid(ECustomerDob.val())) {
+                ECustomerDob.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+                ErrorOccured = true;
+            }
+            if (Validator.isInvalid(ECustomerMob.val(), {
+                    Type: 'mobile'
+                })) {
+                ECustomerMob.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+                ErrorOccured = true;
+            }
+            if (Validator.isInvalid(ECustomerEmail.val(), {
+                    Type: 'email'
+                })) {
+                ECustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+                ErrorOccured = true;
+            }
+
+            // if (!ErrorOccured) {
+            var Value = {
+                CustomerName: ECustomerName.val(),
+                Email: ECustomerEmail.val(),
+                Dob: ECustomerDob.val(),
+                MobNo: Number(ECustomerMob.val())
+            };
+            Db.DbConnection.update({
+                In: "Customer",
+                Set: Value,
+                Where: {
+                    CustomerId: Number(getQsValueByName('id'))
+                }
+            }, function (rowsCount) {
+                if (rowsCount > 0) {
+                    DialogBox.alert('Successfully Updated');
+                    $('form')[0].reset();
+                }
+            }, function (error) {
+                if (error) {
+                    DialogBox.alert('Error Occured');
+                }
+                console.log(error);
+            })
+            //}
+        }
+    </script>
+</body>
+
+</html>

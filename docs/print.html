@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>JsStorage Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link href="materialize/css/materialize.min.css" rel="stylesheet" type="text/css" />
+    <script src="scripts/jquery.js"></script>
+    <script src="materialize/js/materialize.min.js"></script>
+    <script src="scripts/matdialog.min.js"></script>
+    <link href="Style/matdialog.min.css" rel="stylesheet" type="text/css" />
+    <link href="Style/main.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <ul id="listCustomer" class="dropdown-content">
+        <li><a href="customer/add.html">Add</a></li>
+        <li><a href="customer/index.html">List</a></li>
+    </ul>
+    <ul id="listStock" class="dropdown-content">
+        <li><a href="stock/add.html">Add</a></li>
+        <li><a href="stock/index.html">List</a></li>
+    </ul>
+    <nav class="nav-extended">
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+            </ul>
+            <div class="brand-logo center-align">
+                <a href="#" class="logo">ShopDemo</a><br>
+            </div>
+        </div>
+    </nav>
+    <div id="divContent">
+
+        <div id="divBillingContainer" class="row">
+            <div class="col s12 m10 l8 xl6 push-s0 push-m1 push-l2 push-xl3 ">
+                <div id="divCustomerDetail">
+                    <div id="divCustomerName">
+                        <span>Customer Name: -</span>
+                        <span></span>
+                    </div>
+                    <div id="divCustomerMobile">
+                        <span>Customer Mobile: -</span>
+                        <span></span>
+                    </div>
+                    <div id="divCustomerDob">
+                        <span>Customer Dob: -</span>
+                        <span></span>
+                    </div>
+                </div>
+                <table id="tblBilling">
+                    <caption class="align-center">Order Details</caption>
+                    <thead>
+                        <tr>
+                            <th>Item Id</th>
+                            <th>Item Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="right-align">
+                                Total Amount :
+                            </td>
+                            <td class="center-align" id="totalAmount">
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div id="divPrint" class="center-align">
+                    <a class="waves-effect waves-light btn margin-top-40px" onclick="printDoc();">
+                   Create Receipt <i class="material-icons right">print</i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="Scripts/JsValidator.js"></script>
+    <script src="Scripts/JsStorage.js"></script>
+    <script src="Scripts/DbStructure.js"></script>
+    <script src="Scripts/main.js"></script>
+
+    <style>
+        #tblBilling caption {
+            background-color: maroon;
+            color: white;
+            padding: 11px 0px;
+            font-size: 18px;
+        }
+
+        #tblBilling tr td {
+            border: 1px solid black;
+        }
+
+        #tblBilling tr th {
+            text-align: center;
+        }
+
+        #tblBilling tbody tr td {
+            width: 20%;
+            text-align: center;
+        }
+
+        #divCustomerDetail {
+            padding-left: 10px;
+            margin-bottom: 30px;
+        }
+
+        #divCustomerDetail div {
+            padding: 5px 0px;
+        }
+
+        #divCustomerDetail div span:first-child {
+            font-weight: bold;
+        }
+
+        #tblBilling tfoot tr td {
+            border: none;
+        }
+    </style>
+    <script>
+        function onPageLoaded() {
+            getDetailsAndPrint();
+        }
+
+        function getDetailsAndPrint() {
+            var Receiptid = Number(getQsValueByName('receiptid')),
+                Logic1 = {
+                    Table1: {
+                        Table: 'Receipt',
+                        Column: 'ReceiptId',
+                        Where: {
+                            ReceiptId: [Receiptid]
+                        }
+                    },
+                    Join: 'inner',
+                    Table2: {
+                        Table: 'Order',
+                        Column: 'ReceiptId',
+                    },
+                    NextJoin: {
+                        Table: 'Order',
+                        Column: 'ItemId'
+                    }
+                }
+            FromLogic = {
+                Table1: Logic1,
+                Join: 'inner',
+                Table2: {
+                    Table: 'Stock',
+                    Column: 'ItemId',
+                }
+            };
+            showCustomerData(Receiptid, function () {
+                Db.DbConnection.select({
+                    From: FromLogic,
+                }, function (values) {
+                    if (values.length > 0) {
+                        console.log(values);
+
+                        var TableBody = document.querySelector('#tblBilling tbody'),
+                            TotalAmount = 0;
+                        values.forEach(function (item) {
+                            var Order = item.Order,
+                                Item = item.Stock,
+                                Tr = document.createElement('tr'),
+                                Total = Order.Quantity * Item.Price;
+                            Html = "<tr><td>" + Order.ItemId + "</td>" +
+                                "<td> " + Item.ItemName + " </td>" +
+                                "<td> " + Item.Price + " </td>" +
+                                "<td> " + Order.Quantity + " </td>" +
+                                "<td> " + Total + " </td>" +
+                                "</tr>";
+                            TotalAmount += Total;
+                            Tr.innerHTML = Html;
+                            TableBody.appendChild(Tr);
+                        });
+                        document.querySelector('#tblBilling tfoot #totalAmount').innerText =
+                            TotalAmount;
+                        printDoc();
+                    } else {
+                        DialogBox.alert('Error Occured');
+                    }
+                }, function (error) {
+                    console.log(error);
+                    DialogBox.alert('Error Occured');
+                })
+
+            });
+        }
+
+        function printDoc() {
+            $('#divPrint').hide();
+            $('#nav-mobile').hide();
+            $('.brand-logo').css({
+                position: 'relative',
+                display: 'block'
+            });
+            window.print();
+            $('#nav-mobile').show();
+            $('.brand-logo').attr('style', '');
+            $('#divPrint').show();
+        }
+
+        function showCustomerData(receiptid, callBack) {
+
+            var FromLogic = {
+                Table1: {
+                    Table: 'Receipt',
+                    Column: 'CustomerId',
+                    Where: {
+                        ReceiptId: [receiptid]
+                    }
+                },
+                Join: 'inner',
+                Table2: {
+                    Table: 'Customer',
+                    Column: 'CustomerId',
+                }
+            };
+            Db.DbConnection.select({
+                From: FromLogic,
+            }, function (values) {
+                if (values.length > 0) {
+                    var Customer = values[0].Customer;
+                    $('#divCustomerDetail').attr('data-customerId', Customer.CustomerId)
+                    $('#divCustomerName span').last().text(Customer.CustomerName);
+                    $('#divCustomerMobile span').last().text(Customer.MobNo);
+                    $('#divCustomerDob span').last().text(Customer.Dob);
+                    if (callBack != null) {
+                        callBack();
+                    }
+                } else {
+                    DialogBox.alert('Error Occured');
+                }
+            }, function (error) {
+                console.log(error);
+                DialogBox.alert('Error Occured');
+            })
+        }
+    </script>
+</body>
+
+</html>
