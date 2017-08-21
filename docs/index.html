@@ -4,14 +4,12 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>JsStorage Example</title>
+    <title>JsStore Example</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link href="materialize/css/materialize.min.css" rel="stylesheet" type="text/css" />
-    <script src="scripts/jquery.js"></script>
+    <script src="Scripts/jquery.js"></script>
     <script src="materialize/js/materialize.min.js"></script>
-    <script src="scripts/matdialog.min.js"></script>
-    <link href="Style/matdialog.min.css" rel="stylesheet" type="text/css" />
-    <link href="Style/main.css" rel="stylesheet" type="text/css" />
+    <link href="Style/common.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -43,16 +41,11 @@
         <div id="divInputContainer" class="row">
             <form class="col s12 m8 l6 xl4 push-s0 push-m2 push-l3 push-xl4 right-alert">
                 <h5 class="#bf360c deep-orange darken-4 color-white padding-10-px center-align">Add Items In Store</h5>
-                <div class="input-field col s3">
-                    <select id='ddlIdType'>
-                    <option value="mobile">Mobile</option>
-                    <option value='email'>Email</option>
-                </select>
+                <div class="input-field">
+                    <input id="txtEmail" type="text" class="validate margin-top-10px">
+                    <label class="right-alert" for="txtEmail">Email Id</label>
                 </div>
-                <div class="input-field col s8">
-                    <input id="txtIdType" type="text" class="validate">
-                    <label class="right-alert" for="txtIdType">Mobile No</label>
-                </div>
+                <br>
                 <div class="center-align">
                     <a class="waves-effect waves-light btn margin-top-10px" onclick="submit();">
                    Submit <i class="material-icons right">send</i></a>
@@ -107,10 +100,12 @@
             </div>
         </div>
     </div>
+    <script src="Scripts/matdialog.min-1.0.0.js"></script>
+    <link href="Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="Scripts/JsValidator.js"></script>
-    <script src="Scripts/JsStorage.js"></script>
+    <script src="Scripts/JsStore-1.0.1.min.js"></script>
     <script src="Scripts/DbStructure.js"></script>
-    <script src="Scripts/main.js"></script>
+    <script src="Scripts/common.js"></script>
 
     <style>
         #tblBilling {
@@ -172,7 +167,7 @@
             font-weight: bold;
         }
     </style>
-    <script src="scripts/index.js"></script>
+    <script src="Scripts/index.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,10 @@
 var Validator, DialogBox;
 $(document).ready(function () {
+    Db.initiate(function () {
+        if (typeof onPageLoaded !== "undefined") {
+            onPageLoaded();
+        }
+    });
     Validator = new JsValidator(),
         DialogBox = new MatDialog();
     $('select').material_select();
@@ -13,10 +18,7 @@ $(document).ready(function () {
         alignment: 'left', // Displays dropdown with edge aligned to the left of button
         stopPropagation: true // Stops event propagation
     });
-    Db.Initiate();
-    if (typeof onPageLoaded !== "undefined") {
-        onPageLoaded();
-    }
+
 });
 
 function getQsValueByName(name, url) {
@@ -40,4 +42,3 @@ function loadPage(containerId, pageUrl, callBack) {
         }
     });
 }
-

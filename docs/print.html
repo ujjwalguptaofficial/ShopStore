@@ -7,11 +7,9 @@
     <title>JsStorage Example</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link href="materialize/css/materialize.min.css" rel="stylesheet" type="text/css" />
-    <script src="scripts/jquery.js"></script>
+    <script src="Scripts/jquery.js"></script>
     <script src="materialize/js/materialize.min.js"></script>
-    <script src="scripts/matdialog.min.js"></script>
-    <link href="Style/matdialog.min.css" rel="stylesheet" type="text/css" />
-    <link href="Style/main.css" rel="stylesheet" type="text/css" />
+    <link href="Style/common.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -44,8 +42,8 @@
                         <span>Customer Name: -</span>
                         <span></span>
                     </div>
-                    <div id="divCustomerMobile">
-                        <span>Customer Mobile: -</span>
+                    <div id="divCustomerEmail">
+                        <span>Customer Email: -</span>
                         <span></span>
                     </div>
                     <div id="divCustomerDob">
@@ -84,10 +82,12 @@
             </div>
         </div>
     </div>
+    <script src="Scripts/matdialog.min-1.0.0.js"></script>
+    <link href="Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="Scripts/JsValidator.js"></script>
-    <script src="Scripts/JsStorage.js"></script>
+    <script src="Scripts/JsStore-1.0.1.min.js"></script>
     <script src="Scripts/DbStructure.js"></script>
-    <script src="Scripts/main.js"></script>
+    <script src="Scripts/common.js"></script>
 
     <style>
         #tblBilling caption {
@@ -128,74 +128,15 @@
         }
     </style>
     <script>
+        var OrderId;
+
         function onPageLoaded() {
             getDetailsAndPrint();
         }
 
         function getDetailsAndPrint() {
-            var Receiptid = Number(getQsValueByName('receiptid')),
-                Logic1 = {
-                    Table1: {
-                        Table: 'Receipt',
-                        Column: 'ReceiptId',
-                        Where: {
-                            ReceiptId: [Receiptid]
-                        }
-                    },
-                    Join: 'inner',
-                    Table2: {
-                        Table: 'Order',
-                        Column: 'ReceiptId',
-                    },
-                    NextJoin: {
-                        Table: 'Order',
-                        Column: 'ItemId'
-                    }
-                }
-            FromLogic = {
-                Table1: Logic1,
-                Join: 'inner',
-                Table2: {
-                    Table: 'Stock',
-                    Column: 'ItemId',
-                }
-            };
-            showCustomerData(Receiptid, function () {
-                Db.DbConnection.select({
-                    From: FromLogic,
-                }, function (values) {
-                    if (values.length > 0) {
-                        console.log(values);
-
-                        var TableBody = document.querySelector('#tblBilling tbody'),
-                            TotalAmount = 0;
-                        values.forEach(function (item) {
-                            var Order = item.Order,
-                                Item = item.Stock,
-                                Tr = document.createElement('tr'),
-                                Total = Order.Quantity * Item.Price;
-                            Html = "<tr><td>" + Order.ItemId + "</td>" +
-                                "<td> " + Item.ItemName + " </td>" +
-                                "<td> " + Item.Price + " </td>" +
-                                "<td> " + Order.Quantity + " </td>" +
-                                "<td> " + Total + " </td>" +
-                                "</tr>";
-                            TotalAmount += Total;
-                            Tr.innerHTML = Html;
-                            TableBody.appendChild(Tr);
-                        });
-                        document.querySelector('#tblBilling tfoot #totalAmount').innerText =
-                            TotalAmount;
-                        printDoc();
-                    } else {
-                        DialogBox.alert('Error Occured');
-                    }
-                }, function (error) {
-                    console.log(error);
-                    DialogBox.alert('Error Occured');
-                })
-
-            });
+            OrderId = Number(getQsValueByName('order_id'));
+            showCustomerData(showOrderDetails);
         }
 
         function printDoc() {
@@ -211,14 +152,76 @@
             $('#divPrint').show();
         }
 
-        function showCustomerData(receiptid, callBack) {
+        function showOrderDetails() {
+            var Logic1 = {
+                    Table1: {
+                        Table: 'Order',
+                        Column: 'OrderId',
+                        Where: {
+                            OrderId: OrderId
+                        }
 
+                    },
+                    Join: 'inner',
+                    Table2: {
+                        Table: 'OrderDetail',
+                        Column: 'OrderId',
+                    },
+                    NextJoin: {
+                        Table: 'OrderDetail',
+                        Column: 'ItemId'
+                    }
+                },
+                FromLogic = {
+                    Table1: Logic1,
+                    Join: 'inner',
+                    Table2: {
+                        Table: 'Stock',
+                        Column: 'ItemId',
+                    }
+                };
+
+            Db.DbConnection.select({
+                From: FromLogic,
+            }, function (values) {
+                if (values.length > 0) {
+                    console.log(values);
+                    var TableBody = document.querySelector('#tblBilling tbody'),
+                        TotalAmount = 0;
+                    values.forEach(function (item) {
+                        var OrderDetail = item.OrderDetail,
+                            Item = item.Stock,
+                            Tr = document.createElement('tr'),
+                            Total = OrderDetail.Quantity * Item.Price;
+                        Html = "<tr><td>" + OrderDetail.ItemId + "</td>" +
+                            "<td> " + Item.ItemName + " </td>" +
+                            "<td> " + Item.Price + " </td>" +
+                            "<td> " + OrderDetail.Quantity + " </td>" +
+                            "<td> " + Total + " </td>" +
+                            "</tr>";
+                        TotalAmount += Total;
+                        Tr.innerHTML = Html;
+                        TableBody.appendChild(Tr);
+                    });
+                    document.querySelector('#tblBilling tfoot #totalAmount').innerText =
+                        TotalAmount;
+                    printDoc();
+                } else {
+                    DialogBox.alert('Error Occured');
+                }
+            }, function (error) {
+                console.log(error);
+                DialogBox.alert('Error Occured');
+            })
+        }
+
+        function showCustomerData(callBack) {
             var FromLogic = {
                 Table1: {
-                    Table: 'Receipt',
+                    Table: 'Order',
                     Column: 'CustomerId',
                     Where: {
-                        ReceiptId: [receiptid]
+                        OrderId: OrderId
                     }
                 },
                 Join: 'inner',
@@ -234,7 +237,7 @@
                     var Customer = values[0].Customer;
                     $('#divCustomerDetail').attr('data-customerId', Customer.CustomerId)
                     $('#divCustomerName span').last().text(Customer.CustomerName);
-                    $('#divCustomerMobile span').last().text(Customer.MobNo);
+                    $('#divCustomerEmail span').last().text(Customer.Email);
                     $('#divCustomerDob span').last().text(Customer.Dob);
                     if (callBack != null) {
                         callBack();

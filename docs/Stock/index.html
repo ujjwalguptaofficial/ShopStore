@@ -7,11 +7,9 @@
     <title>JsStorage Example</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link href="../materialize/css/materialize.min.css" rel="stylesheet " type="text/css" />
-    <script src="../scripts/jquery.js"></script>
+    <script src="../Scripts/jquery.js"></script>
     <script src="../materialize/js/materialize.min.js"></script>
-    <script src="../scripts/jsvalidator.js"></script>
-    <script src="../scripts/matdialog.min.js"></script>
-    <link href="../Style/matdialog.min.css" rel="stylesheet" type="text/css" />
+    <link href="../Style/common.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -60,10 +58,12 @@
             </table>
         </div>
     </div>
-    <link href="../style/main.css" rel="stylesheet " type="text/css" />
-    <script src="../Scripts/JsStorage.js"></script>
+    <script src="../Scripts/matdialog.min-1.0.0.js"></script>
+    <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
+    <script src="../Scripts/JsValidator.js"></script>
+    <script src="../Scripts/JsStore-1.0.1.min.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
-    <script src="../Scripts/main.js"></script>
+    <script src="../Scripts/common.js"></script>
     <style>
         table {
             border: 1px solid black;
@@ -86,7 +86,7 @@
     <script>
         var WhereLogic = {},
             WhereInLogic = [];
-        window.onload = function () {
+        onPageLoaded = function () {
             showStockItems();
             bindEvents();
         }

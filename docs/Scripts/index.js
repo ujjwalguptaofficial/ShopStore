@@ -1,18 +1,9 @@
 var RowInserted = false;
 
 function onPageLoaded() {
-    $('#ddlIdType').change(function () {
-        var Value = $(this).val();
-        if (Value == 'mobile') {
-            $('label[for="txtIdType"]').text('Mobile No');
-        } else {
-            $('label[for="txtIdType"]').text('Email Id');
-        }
-    });
-    var MobileNo = getQsValueByName('mob');
-    if (MobileNo) {
-        $('#ddlIdType').val('mobile');
-        $('#txtIdType').val(MobileNo);
+    var Email = getQsValueByName('email');
+    if (Email) {
+        $('#txtEmail').val(Email);
         submit();
     }
     $('#tblBilling tbody').on('blur', 'input', function () {
@@ -81,48 +72,38 @@ function insertRow() {
 }
 
 function submit() {
-    var TextInput = $('#txtIdType');
+    var TextInput = $('#txtEmail');
     // Validator.startValidation();
-    if ($('#ddlIdType').val() == 'mobile') {
-        if (Validator.isInvalid(TextInput.val(), {
-                Type: 'mobile'
-            })) {
-            TextInput.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-        } else {
-            Db.DbConnection.select({
-                From: 'Customer',
-                Where: {
-                    MobNo: Number(TextInput.val())
-                }
-            }, function (customers) {
-                if (customers.length > 0) {
-                    $('#divCustomerDetail').attr('data-customerId', customers[0].CustomerId)
-                    $('#divCustomerName span').last().text(customers[0].CustomerName);
-                    $('#divCustomerMobile span').last().text(customers[0].MobNo);
-                    $('#divCustomerDob span').last().text(customers[0].Dob);
-                    $('#divInputContainer').hide();
-                    $('#divBillingContainer').show(500);
-                } else {
-                    DialogBox.confirm('No Customer Found, do you want to create one ?', function (
-                        result) {
-                        if (result) {
-                            window.location.href = 'Customer/Add.html?mob=' + TextInput.val();
-                        }
-                    });
-                }
-            }, function (error) {
-                console.log(error);
-                alert('Error Occured');
-            })
-        }
+    if (Validator.isInvalid(TextInput.val(), {
+            Type: 'email'
+        })) {
+        TextInput.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
     } else {
-        if (Validator.isInvalid(TextInput.val(), {
-                Type: 'email'
-            })) {
-            TextInput.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-        } else {
-            alert('all good');
-        }
+        Db.DbConnection.select({
+            From: 'Customer',
+            Where: {
+                Email: TextInput.val()
+            }
+        }, function (customers) {
+            if (customers.length > 0) {
+                $('#divCustomerDetail').attr('data-customerId', customers[0].CustomerId)
+                $('#divCustomerName span').last().text(customers[0].CustomerName);
+                $('#divCustomerMobile span').last().text(customers[0].MobNo);
+                $('#divCustomerDob span').last().text(customers[0].Dob);
+                $('#divInputContainer').hide();
+                $('#divBillingContainer').show(500);
+            } else {
+                DialogBox.confirm('No Customer Found, do you want to create one ?', function (
+                    result) {
+                    if (result) {
+                        window.location.href = 'Customer/Add.html?email=' + TextInput.val();
+                    }
+                });
+            }
+        }, function (error) {
+            console.log(error);
+            alert('Error Occured');
+        })
     }
 
 }
@@ -134,14 +115,14 @@ function CreateReceipt() {
             Total: Number($('#totalAmount').text())
         };
     Db.DbConnection.insert({
-        Into: 'Receipt',
+        Into: 'Order',
         Return: true, // this will return the inserted datas
         Values: [Value]
     }, function (values) {
         if (values.length > 0) {
-            var ReceiptId = values[0].ReceiptId;
-            if (ReceiptId) {
-                insertShoppingList(ReceiptId);
+            var OrderId = values[0].OrderId;
+            if (OrderId) {
+                insertShoppingList(OrderId);
             }
         } else {
             DialogBox.alert('Error Occured');
@@ -152,17 +133,17 @@ function CreateReceipt() {
     })
 }
 
-function insertShoppingList(receiptId) {
-    var ShoppingList = getShoppingList(receiptId);
+function insertShoppingList(orderId) {
+    var ShoppingList = getShoppingList(orderId);
     if (ShoppingList.length > 0) {
         Db.DbConnection.insert({
-            Into: 'Order',
+            Into: 'OrderDetail',
             Values: ShoppingList,
             Return: true
         }, function (values) {
             if (values.length > 0) {
                 DialogBox.alert('Successfully added');
-                window.location.href = "print.html?receiptid=" + receiptId;
+                window.location.href = "print.html?order_id=" + orderId;
             } else {
                 DialogBox.alert('Error Occured');
             }
@@ -174,14 +155,14 @@ function insertShoppingList(receiptId) {
 
 }
 
-function getShoppingList(receiptId) {
+function getShoppingList(orderId) {
     var List = [];
     $('#tblBilling tbody tr').each(function () {
         var Columns = $(this).find('td'),
             IsValidColumn = $(Columns[4]).text();
         if (IsValidColumn.length > 0) {
             List.push({
-                ReceiptId: receiptId,
+                OrderId: orderId,
                 ItemId: Number($(Columns[0]).find('input').val()),
                 Quantity: Number($(Columns[3]).find('input').val())
             })
