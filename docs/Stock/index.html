@@ -84,8 +84,7 @@
         }
     </style>
     <script>
-        var WhereLogic = {},
-            WhereInLogic = [];
+        var WhereLogic = {};
         onPageLoaded = function () {
             showStockItems();
             bindEvents();
@@ -116,12 +115,10 @@
         }
 
         function searchItems() {
-            //if (Object.keys(WhereLogic).length > 0) {
-            if (WhereInLogic.length > 0) {
+            if (Object.keys(WhereLogic).length > 0) {
                 Db.DbConnection.select({
                     From: 'Stock',
-                    // Where: WhereLogic
-                    WhereIn: WhereInLogic
+                    Where: WhereLogic
                 }, function (stocks) {
                     createItemsList(stocks);
                 }, function (error) {
@@ -194,54 +191,45 @@
                 }
             })
             $('#tblStock tr#trSearch th input').keyup(function () {
+
                 var Value = $(this).val(),
-                    Query = {
-                        Column: null,
-                        Value: null,
-                        Op: null
-                    };
+                    ColumnName;
                 switch ($(this).parent().index()) {
                     case 0:
-                        Query.Column = 'ItemName';
-                        Query.Value = Value;
-                        Query.Op = '~';
-                        var ItemIndex = indexOfColumnInWhereInLogic(Query.Column);
-                        //if value is not null and item does not exist
-                        if (Value.length > 0 && ItemIndex < 0) {
-                            WhereInLogic.push(Query)
-                        } else if (Value.length == 0) { // item exist and value is null
-                            deleteFromWhereIn(Query.Column);
-                        } else { //item exist and value is updated
-                            WhereInLogic[ItemIndex] = Query;
+                        ColumnName = 'ItemName';
+                        //if value is not null and item exist or does not exist
+                        if (Value.length > 0) {
+                            WhereLogic[ColumnName] = {
+                                Like: '%' + Value + '%'
+                            }
+                        } else { // item exist and value is null
+                            delete WhereLogic[ColumnName];
                         }
                         break;
                     case 1:
-                        Query.Column = 'Price';
-                        Query.Value = Number(Value);
-                        Query.Op = '>=';
-                        var ItemIndex = indexOfColumnInWhereInLogic(Query.Column);
-                        if (Value.length > 0 && ItemIndex < 0) {
-                            WhereInLogic.push(Query)
-                        } else if (Value.length == 0) {
-                            deleteFromWhereIn(Query.Column);
-                        } else {
-                            WhereInLogic[ItemIndex] = Query;
+                        ColumnName = 'Price';
+                        //if value is not null and item exist or does not exist
+                        if (Value.length > 0) {
+                            WhereLogic[ColumnName] = {
+                                '<=': Number(Value)
+                            }
+                        } else { // item exist and value is null
+                            delete WhereLogic[ColumnName];
                         }
                         break;
                     case 2:
-                        Query.Column = 'Quantity';
-                        Query.Value = Number(Value);
-                        Query.Op = '>=';
-                        var ItemIndex = indexOfColumnInWhereInLogic(Query.Column);
-                        if (Value.length > 0 && ItemIndex < 0) {
-                            WhereInLogic.push(Query)
-                        } else if (Value.length == 0) {
-                            deleteFromWhereIn(Query.Column);
-                        } else {
-                            WhereInLogic[ItemIndex] = Query;
+                        ColumnName = 'Quantity';
+                        //if value is not null and item exist or does not exist
+                        if (Value.length > 0) {
+                            WhereLogic[ColumnName] = {
+                                '>=': Number(Value)
+                            }
+                        } else { // item exist and value is null
+                            delete WhereLogic[ColumnName];
                         }
                         break;
                 }
+
                 searchItems();
             });
 
