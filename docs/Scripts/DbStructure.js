@@ -3,10 +3,12 @@ var Db = {
     initiate: function (callBack) {
         var DbName = 'Shop',
             That = this;
-        JsStore.isDbExist(DbName, function (isExist) {
+        JsStore.isDbExist({DbName:DbName,Table:{Name:'Stock',Version:2}}, function (isExist) {
             if (isExist) {
+                console.log('Db exist');
                 That.DbConnection = new JsStore.Instance(DbName);
             } else {
+                console.log('Db not exist');
                 That.DbConnection = new JsStore.Instance().createDb(getDbStructure());
             }
             callBack();
