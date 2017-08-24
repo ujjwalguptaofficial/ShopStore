@@ -19,6 +19,10 @@ $(document).ready(function () {
         stopPropagation: true // Stops event propagation
     });
 
+    $('#btnCancel').click(function () {
+        window.history.back();
+    })
+
 });
 
 function getQsValueByName(name, url) {

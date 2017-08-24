@@ -21,12 +21,16 @@
         <li><a href="../stock/add.html">Add</a></li>
         <li><a href="../stock/index.html">List</a></li>
     </ul>
+    <ul id="listOrder" class="dropdown-content">
+        <li><a href="../Order/index.html">List</a></li>
+    </ul>
     <nav class="nav-extended">
         <div class="nav-wrapper">
             <ul id="nav-mobile" class="right">
                 <li><a href="../index.html">Home</a></li>
-                <li class="active"><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
                 <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li class="active"><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
             </ul>
             <div class="brand-logo center-align">
                 <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
@@ -50,72 +54,17 @@
             </div>
             <div class="center-align">
                 <a class="waves-effect waves-light btn" onclick="save();"><i class="material-icons left">done</i>Add</a>
-                <a class="waves-effect waves-light btn"><i class="material-icons left">close</i>Cancel</a>
+                <a id='btnCancel' class="waves-effect waves-light btn"><i class="material-icons left">close</i>Cancel</a>
             </div>
         </form>
     </div>
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.2.js"></script>
+    <script src="../Scripts/JsStore-1.0.3.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
-    <script>
-        var Validator;
-        onPageLoaded = function () {
-            Validator = new JsValidator();
-            $('.datepicker').pickadate({
-                selectMonths: true, // Creates a dropdown to control month
-                selectYears: 100 // Creates a dropdown of 15 years to control year
-            });
-            var Email = getQsValueByName('email');
-            if (Email != null) {
-                $('#txtEmail').focus().val(Email);
-            }
-        }
-
-        function save() {
-            var ECustomerName = $('#txtName'),
-                ECustomerDob = $('#txtDob'),
-                ECustomerEmail = $('#txtEmail');
-            Validator.startValidation();
-            if (Validator.isInvalid(ECustomerName.val())) {
-                ECustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-            if (Validator.isInvalid(ECustomerDob.val())) {
-                ECustomerDob.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-            if (Validator.isInvalid(ECustomerEmail.val(), {
-                    Type: 'email'
-                })) {
-                ECustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-            if (!Validator.IsAnyError) {
-                var Value = {
-                    CustomerName: ECustomerName.val(),
-                    Email: ECustomerEmail.val(),
-                    Dob: ECustomerDob.val()
-                };
-                Db.DbConnection.insert({
-                    Into: "Customer",
-                    Values: [Value]
-                }, function (rowsCount) {
-                    if (rowsCount > 0) {
-                        DialogBox.alert('Successfully Added');
-                        if (getQsValueByName('email') != null) {
-                            window.location.href = "../index.html?email=" + ECustomerEmail.val();
-                        }
-                        $('form')[0].reset();
-                    }
-                }, function (error) {
-                    if (error) {
-                        DialogBox.alert('Error Occured');
-                    }
-                    console.log(error);
-                })
-            }
-        }
-    </script>
+    <script src="add.js"></script>
 </body>
 
 </html>

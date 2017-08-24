@@ -21,12 +21,16 @@
         <li><a href="../stock/add.html">Add</a></li>
         <li><a href="../stock/index.html">List</a></li>
     </ul>
+    <ul id="listOrder" class="dropdown-content">
+        <li><a href="../Order/index.html">List</a></li>
+    </ul>
     <nav class="nav-extended">
         <div class="nav-wrapper">
             <ul id="nav-mobile" class="right">
                 <li><a href="../index.html">Home</a></li>
                 <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
-                <li class="active"><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li class="active"><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
             </ul>
             <div class="brand-logo center-align">
                 <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
@@ -34,7 +38,7 @@
         </div>
     </nav>
     <div class="row center-align">
-        <div class="col s12 m8 l6 xl4 push-s0 push-m2 push-l3 push-xl4 right-alert">
+        <div class="col s12 m10 l8 xl6 push-s0 push-m1 push-l2 push-xl3 right-alert">
             <table id="tblStock">
                 <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
                 <thead>
@@ -61,7 +65,7 @@
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.2.js"></script>
+    <script src="../Scripts/JsStore-1.0.3.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
     <style>
@@ -108,7 +112,7 @@
                 var Tr = document.createElement('tr');
                 Tr.setAttribute('id', stock.ItemId);
                 Tr.innerHTML = "<td>" + stock.ItemName + "</td><td>" + stock.Price + "</td><td>" +
-                    stock.Quantity +
+                    stock.Unit +
                     "</td><td class='edit'><i class='material-icons'>edit</i></td><td class='delete'><i class='material-icons'>delete</i></td>";
                 TableBody.appendChild(Tr);
             });
@@ -218,7 +222,7 @@
                         }
                         break;
                     case 2:
-                        ColumnName = 'Quantity';
+                        ColumnName = 'Unit';
                         //if value is not null and item exist or does not exist
                         if (Value.length > 0) {
                             WhereLogic[ColumnName] = {

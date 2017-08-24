@@ -21,50 +21,46 @@
         <li><a href="../stock/add.html">Add</a></li>
         <li><a href="../stock/index.html">List</a></li>
     </ul>
+    <ul id="listOrder" class="dropdown-content">
+        <li><a href="../Order/index.html">List</a></li>
+    </ul>
     <nav class="nav-extended">
         <div class="nav-wrapper">
             <ul id="nav-mobile" class="right">
                 <li><a href="../index.html">Home</a></li>
-                <li class="active"><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
                 <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li class="active"><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
             </ul>
             <div class="brand-logo center-align">
-                <a href="#" class="logo">ShopDemo</a><br>
+                <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
             </div>
         </div>
     </nav>
     <div class="row center-align">
-        <div class="col s12 m8 l6 push-s0 push-m2 push-l3">
-            <div id="divInputContainer">
-                <form class="right-alert">
-                    <!--<h5 class="#bf360c deep-orange darken-4 color-white padding-10-px center-align">Add Items In Store</h5>-->
-                    <div class="input-field col s3">
-                        <select id='ddlSearchType'>
-                            <option value="mobile">Mobile No</option>
-                            <option value='name'>Name</option>
-                            <option value="dob">Dob</option>
-                            <option value='email'>Email</option>
-                             <option value='advanced'>Advanced</option>
-                        </select>
-                    </div>
-                    <div class="input-field col s6">
-                        <input id="txtSearchType" type="text" class="validate">
-                        <label class="right-alert" for="txtSearchType">Mobile No</label>
-                    </div>
-                    <div class="center-align">
-                        <a class="waves-effect waves-light btn margin-top-10px" onclick="searchItems();">
-                   Search <i class="material-icons right">search</i></a>
-                    </div>
-                </form>
-            </div>
+        <div class="col s12 m12 l10 push-l1">
             <table id="tblCustomer">
                 <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
                 <thead>
+                    <tr id='trSearch'>
+                        <th><input type="text" placeholder="Customer Name"></th>
+                        <th><input type="text" placeholder="Contact Name"></th>
+                        <th><input type="text" placeholder="Email"></th>
+                        <th><input type="text" placeholder="Address"></th>
+                        <th><input type="text" placeholder="City"></th>
+                        <th><input type="text" placeholder="Postal Code"></th>
+                        <th><input type="text" placeholder="Country"></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
                     <tr>
                         <th>Name</th>
-                        <th>Dob</th>
-                        <th>Mobile no</th>
+                        <th>Contact Name</th>
                         <th>Email</th>
+                        <th>Address</th>
+                        <th>City</th>
+                        <th>PostalCode</th>
+                        <th>Country</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -72,235 +68,19 @@
                 <tbody>
                 </tbody>
             </table>
-            <div id="divNoCustomerFound" class="margin-top-40px">
-                <h5>No customers found</h5>
-            </div>
+            <ul class="pagination">
+               
+            </ul>
         </div>
     </div>
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.2.js"></script>
+    <script src="../Scripts/JsStore-1.0.3.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
-    <style>
-        #divInputContainer {
-            margin-bottom: 20px;
-        }
-
-        table {
-            border: 1px solid black;
-        }
-
-        table tr td,
-        th {
-            border: 1px solid black;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .label-advanced-search {
-            display: block !important;
-            margin-bottom: 30px;
-        }
-
-        .display-block {
-            display: block !important;
-        }
-    </style>
-    <script>
-        function onPageLoaded() {
-            showStockItems();
-            bindEvents();
-        }
-
-        function showStockItems() {
-            Db.DbConnection.select({
-                From: 'Customer',
-                OnSuccess: function (customers) {
-                    createCustomersList(customers);
-                },
-                OnError: function (error) {
-                    console.log(error);
-                    alert('Error Occured');
-                }
-            });
-        }
-
-        function deleteItem(itemRow) {
-            DialogBox.confirm("Are you sure want to delete?", function (result) {
-                if (result) {
-                    Db.DbConnection.delete({
-                            From: 'Customer',
-                            Where: {
-                                CustomerId: Number(itemRow.attr('Id'))
-                            }
-                        }, function (rowsAffected) {
-                            if (rowsAffected > 0) {
-                                itemRow.remove();
-                            } else {
-                                alert('No item deleted');
-                            }
-                        },
-                        function (error) {
-                            console.log(error);
-                            alert('Error Occured')
-                        })
-                }
-            })
-        }
-
-        function bindEvents() {
-            $('table#tblCustomer').on('click', 'tr td.delete', function () {
-                var ItemRow = $(this).parent();
-                deleteItem(ItemRow);
-            })
-
-            $('table#tblCustomer').on('click', 'tr td.edit', function () {
-                window.location.href = "edit.html?id=" + $(this).parent().attr('Id');
-            })
-
-            $('#ddlSearchType').change(function () {
-                var Type = $(this).val(),
-                    Text = "";
-                switch (Type) {
-                    case 'mobile':
-                        Text = 'Mobile No';
-                        break;
-                    case 'email':
-                        Text = 'Email Id';
-                        break;
-                    case 'name':
-                        Text = 'Name';
-                        break;
-                    case 'dob':
-                        Text = 'Date of Birth';
-                        break;
-                    case 'advanced':
-                        Text = 'Advanced Search';
-                        openAdvancedSearchModal();
-                        break;
-
-                }
-                $('label[for="txtSearchType"]').text(Text);
-                if (Type == 'dob') {
-                    $('#txtSearchType').pickadate({
-                        selectMonths: true, // Creates a dropdown to control month
-                        selectYears: 100 // Creates a dropdown of 15 years to control year
-                    });
-                } else {
-
-                }
-            });
-        }
-
-        function openAdvancedSearchModal() {
-            DialogBox.setModalConfig({
-                Dismissible: false
-            });
-            var HtmlString =
-                '<input type="checkbox" id="chk_CustomerName" data-target="txtCustomerName" class="filled-in advSearch" />' +
-                '<label for="chk_CustomerName" class="label-advanced-search">' +
-                '<input id="txtCustomerName" disabled style="margin-top:-10px" placeholder="&nbsp;&nbsp;Customer Name" type="text"/></label>' +
-                '<input type="checkbox" id="chk_MobNo" data-target="txtMobNo" class="filled-in advSearch" />' +
-                '<label for="chk_MobNo" class="label-advanced-search">' +
-                '<input id="txtMobNo" disabled style="margin-top:-10px" placeholder="&nbsp;&nbsp;Mobile No" type="number"/></label>' +
-                '<input type="checkbox" id="chk_Email" data-target="txtEmail" class="filled-in advSearch" />' +
-                '<label for="chk_Email" class="display-block">' +
-                '<input id="txtEmail" disabled style="margin-top:-10px" placeholder="&nbsp;&nbsp;Email" type="text"/></label>'
-            DialogBox.create({
-                Content: {
-                    Label: HtmlString
-                },
-                ButtonType: 'Confirm'
-            }, function (result) {
-                if (result) {
-                    var Query = {};
-                    $('.advSearch').each(function () {
-                        if ($(this).prop("checked")) {
-                            var Prop = $(this).attr('id').split('_')[1];
-                            if (Prop.includes('Mob')) {
-                                Query[Prop] = Number($('#txt' + Prop).val());
-                            } else {
-                                Query[Prop] = $('#txt' + Prop).val();
-                            }
-                        }
-                    })
-                    searchItems(Query);
-                    console.log(Query);
-                }
-            })
-            $('.advSearch').click(function () {
-                var TargetElement = $(this).data('target');
-                if ($(this).prop("checked")) {
-                    $('#' + TargetElement).removeAttr('disabled');
-                } else {
-                    $('#' + TargetElement).attr('disabled', 'true');
-                }
-            })
-        }
-
-        function createCustomersList(customers) {
-            if (customers.length > 0) {
-                $('#divNoCustomerFound').hide();
-                $('#tblCustomer').show(500);
-                var TableBody = document.querySelector('#tblCustomer tbody');
-                TableBody.innerHTML = "";
-                customers.forEach(function (customer) {
-                    var Tr = document.createElement('tr');
-                    Tr.setAttribute('id', customer.CustomerId);
-                    Tr.innerHTML = "<td>" + customer.CustomerName + "</td><td>" + customer.Dob +
-                        "</td><td>" +
-                        customer.MobNo + "</td><td>" + customer.Email +
-                        "</td><td class='edit'><i class='material-icons'>edit</i></td><td class='delete'><i class='material-icons'>delete</i></td>";
-                    TableBody.appendChild(Tr);
-                })
-
-            } else {
-                $('#tblCustomer').hide();
-                $('#divNoCustomerFound').show(500);
-            }
-        }
-
-        function searchItems(whereLogic) {
-            var WhereLogic = whereLogic;
-            if (!whereLogic) {
-                var Value = $('#txtSearchType').val(),
-                    Type = $('#ddlSearchType').val();
-                switch (Type) {
-                    case 'mobile':
-                        WhereLogic = {
-                            MobNo: Number(Value)
-                        };
-                        break;
-                    case 'email':
-                        WhereLogic = {
-                            Email: Value
-                        };
-                        break;
-                    case 'name':
-                        WhereLogic = {
-                            CustomerName: Value
-                        };
-                        break;
-                    case 'dob':
-                        WhereLogic = {
-                            Dob: Value
-                        };
-                        break;
-                }
-            }
-
-            Db.DbConnection.select({
-                From: 'Customer',
-                Where: WhereLogic
-            }, function (results) {
-                createCustomersList(results);
-            }, function (errors) {
-                console.log(errors);
-            });
-        }
-    </script>
+    <link href="index.css" rel="stylesheet" type="text/css" />
+    <script src="index.js"></script>
 </body>
 
 </html>

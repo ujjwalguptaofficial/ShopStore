@@ -1,6 +1,3 @@
-/*! JsStore.js - v1.0.2 - 21/8/2017
- * https://github.com/ujjwalguptaofficial/JsStore
- * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -11,150 +8,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+/** JsStore.js - v1.0.3 - 23/8/2017
+ * https://github.com/ujjwalguptaofficial/JsStore
+ * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
 (function (JsStore) {
-    var WebWorkerStatus;
-    (function (WebWorkerStatus) {
-        WebWorkerStatus["Registered"] = "registerd";
-        WebWorkerStatus["Failed"] = "failed";
-        WebWorkerStatus["NotStarted"] = "not_started";
-    })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
-    ;
-    JsStore.WorkerStatus = WebWorkerStatus.NotStarted;
-    var CodeExecutionHelper = (function () {
-        function CodeExecutionHelper() {
-            this.RequestQueue = [];
-            this.IsCodeExecuting = false;
-            this.prcoessExecutionOfCode = function (request) {
-                this.RequestQueue.push(request);
-                if (JsStore.EnableLog) {
-                    console.log("request pushed:" + request.Name);
-                }
-                if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
-                    this.executeCode();
-                }
-            };
-            this.executeCode = function () {
-                if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
-                    if (JsStore.EnableLog) {
-                        console.log("request executing" + this.RequestQueue[0].Name);
-                    }
-                    this.IsCodeExecuting = true;
-                    var Request = {
-                        Name: this.RequestQueue[0].Name,
-                        Query: this.RequestQueue[0].Query
-                    };
-                    if (JsStore.WorkerStatus == WebWorkerStatus.Registered) {
-                        this.executeCodeUsingWorker(Request);
-                    }
-                    else {
-                        this.executeCodeDirect(Request);
-                    }
-                }
-            };
-            this.executeCodeDirect = function (request) {
-                var That = this;
-                new JsStore.Business.Main(function (results) {
-                    That.processFinishedRequest(results);
-                }).checkConnectionAndExecuteLogic(request);
-            };
-            this.executeCodeUsingWorker = function (request) {
-                JsStore.WorkerInstance.postMessage(request);
-            };
-            this.processFinishedRequest = function (message) {
-                var FinishedRequest = this.RequestQueue.shift();
-                this.IsCodeExecuting = false;
-                if (FinishedRequest) {
-                    if (JsStore.EnableLog) {
-                        console.log("request finished:" + FinishedRequest.Name);
-                    }
-                    if (message.ErrorOccured) {
-                        if (FinishedRequest.OnError) {
-                            FinishedRequest.OnError(message.ErrorDetails);
-                        }
-                    }
-                    else {
-                        if (FinishedRequest.OnSuccess) {
-                            if (message.ReturnedValue != null) {
-                                FinishedRequest.OnSuccess(message.ReturnedValue);
-                            }
-                            else {
-                                FinishedRequest.OnSuccess();
-                            }
-                        }
-                    }
-                    this.executeCode();
-                }
-            };
-            this.onWorkerFailed = function () {
-                console.warn('JsStore is not runing in web worker');
-                JsStore.WorkerStatus = WebWorkerStatus.Failed;
-                this.executeCode();
-            };
-            this.createWorker = function () {
-                var That = this;
-                try {
-                    if (Worker) {
-                        var ScriptUrl = this.getScriptUrl();
-                        if (ScriptUrl && ScriptUrl.length > 0) {
-                            JsStore.WorkerInstance = new Worker(ScriptUrl);
-                            JsStore.WorkerInstance.onmessage = function (msg) {
-                                That.onMessageFromWorker(msg);
-                            };
-                            setTimeout(function () {
-                                if (JsStore.WorkerStatus != WebWorkerStatus.Failed) {
-                                    JsStore.WorkerStatus = WebWorkerStatus.Registered;
-                                }
-                                That.executeCode();
-                            }, 100);
-                        }
-                        else {
-                            That.onWorkerFailed();
-                        }
-                    }
-                    else {
-                        That.onWorkerFailed();
-                    }
-                }
-                catch (ex) {
-                    That.onWorkerFailed();
-                }
-            };
-            this.onMessageFromWorker = function (msg) {
-                var That = this;
-                if (typeof msg.data == 'string') {
-                    var Datas = msg.data.split(':')[1];
-                    switch (Datas) {
-                        case 'WorkerFailed':
-                            That.onWorkerFailed();
-                            break;
-                    }
-                }
-                else {
-                    this.processFinishedRequest(msg.data);
-                }
-            };
-        }
-        CodeExecutionHelper.prototype.getScriptUrl = function (fileName) {
-            var ScriptUrl = "";
-            var FileName = fileName ? fileName.toLowerCase() : "jsstore";
-            var Scripts = document.getElementsByTagName('script');
-            for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
-                url = Scripts[i].src;
-                url = url.substring(url.lastIndexOf('/') + 1).toLowerCase();
-                if (url.length > 0 && url.indexOf(FileName) >= 0) {
-                    ScriptUrl = Scripts[i].src;
-                    return ScriptUrl;
-                }
-            }
-            return ScriptUrl;
-        };
-        return CodeExecutionHelper;
-    }());
-    JsStore.CodeExecutionHelper = CodeExecutionHelper;
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
+    /**
+    * checks whether db exist or not
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
     JsStore.isDbExist = function (dbInfo, callback) {
         var DbName;
         if (typeof dbInfo == 'string') {
@@ -168,6 +32,12 @@ var JsStore;
             });
         }
     };
+    /**
+    * get Db Version
+    *
+    * @param {string} dbName
+    * @param {Function} callback
+    */
     JsStore.getDbVersion = function (dbName, callback) {
         KeyStore.get("JsStore_" + dbName + '_Db_Version', function (dbVersion) {
             callback(Number(dbVersion));
@@ -204,16 +74,6 @@ var JsStore;
     ;
     JsStore.EnableLog = false;
 })(JsStore || (JsStore = {}));
-(!self.alert);
-{
-    self.onmessage = function (e) {
-        if (JsStore.EnableLog) {
-            console.log("Request executing from WebWorker, request name:" + e.data.Name);
-        }
-        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
-        IndexDbObject.checkConnectionAndExecuteLogic(Request);
-    };
-}
 var JsStore;
 (function (JsStore) {
     var Utils = (function () {
@@ -281,6 +141,12 @@ var JsStore;
                 delete obj[key];
             }
         };
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf MainLogic
+         */
         Utils.setDbType = function () {
             self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
             if (indexedDB) {
@@ -327,6 +193,7 @@ var JsStore;
             function Table(table, dbName) {
                 this.Name = "";
                 this.Columns = [];
+                //internal Members
                 this.RequireDelete = false;
                 this.RequireCreation = false;
                 this.PrimaryKey = "";
@@ -340,6 +207,7 @@ var JsStore;
                 this.setDbVersion(dbName);
                 this.setPrimaryKey(dbName);
             }
+            //private methods
             Table.prototype.setPrimaryKey = function (dbName) {
                 var That = this;
                 this.Columns.forEach(function (item) {
@@ -362,6 +230,7 @@ var JsStore;
             Table.prototype.setDbVersion = function (dbName) {
                 var That = this;
                 JsStore.DbVersion = JsStore.DbVersion ? (JsStore.DbVersion > That.Version ? JsStore.DbVersion : That.Version) : That.Version;
+                //setting db version
                 KeyStore.set('JsStore_' + dbName + '_Db_Version', JsStore.DbVersion)
                     .set("JsStore_" + dbName + "_" + That.Name + "_Version", JsStore.DbVersion);
                 That.Version = JsStore.DbVersion;
@@ -462,6 +331,16 @@ var JsStore;
                     return KeyRange;
                 };
             }
+            /**
+            * For matching the different column value existance
+            *
+            * @private
+            * @param {any} where
+            * @param {any} value
+            * @returns
+            *
+            * @memberOf SelectLogic
+            */
             Base.prototype.checkForWhereConditionMatch = function (rowValue) {
                 var Where = this.Query.Where, Status = true;
                 var checkIn = function (column, value) {
@@ -510,30 +389,35 @@ var JsStore;
                 }, checkComparisionOp = function (column, value, symbol) {
                     var CompareValue = Where[column][symbol];
                     switch (symbol) {
+                        //greater than
                         case '>':
                             if (CompareValue <= value) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //less than
                         case '<':
                             if (CompareValue >= value) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //less than equal
                         case '<=':
                             if (value > CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //greather than equal
                         case '>=':
                             if (value < CompareValue) {
                                 Status = false;
                             }
                             ;
                             break;
+                        //between
                         case '-':
                             if (value < CompareValue.Low || value > CompareValue.High) {
                                 Status = false;
@@ -606,7 +490,7 @@ var JsStore;
                     };
                     Business.DbConnection.onversionchange = function (e) {
                         if (e.newVersion === null) {
-                            e.target.close();
+                            e.target.close(); // Manually close our connection to the db
                         }
                     };
                     Business.DbConnection.onerror = function (e) {
@@ -619,12 +503,14 @@ var JsStore;
                     if (onSuccess != null) {
                         onSuccess();
                     }
+                    //save dbSchema in keystore
                     KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_Schema", Business.ActiveDataBase);
                 };
                 DbRequest.onupgradeneeded = function (event) {
                     var db = event.target.result;
                     Business.ActiveDataBase.Tables.forEach(function (item) {
                         if (item.RequireDelete) {
+                            // Delete the old datastore.    
                             if (db.objectStoreNames.contains(item.Name)) {
                                 db.deleteObjectStore(item.Name);
                             }
@@ -669,6 +555,7 @@ var JsStore;
                                 }
                             });
                         }
+                        //setting the table version
                         KeyStore.set("JsStore_" + Business.ActiveDataBase.Name + "_" + item.Name + "_Version", item.Version);
                     }
                     catch (e) {
@@ -795,14 +682,25 @@ var JsStore;
                 }
                 return _this;
             }
+            /**
+             * check the defined schema and based upon that modify or create the value
+             *
+             * @private
+             * @param {any} value
+             * @param {string} tableName
+             *
+             * @memberof InsertLogic
+             */
             Insert.prototype.checkSchemaAndModifyValue = function (value, callBack) {
                 var That = this, TableName = this.Table.Name, Index = 0, checkAndModifyInternal = function (column) {
                     if (column) {
                         var CheckNotNullAndDataType = function () {
+                            //check not null schema
                             if (column.NotNull && That.isNull(value[column.Name])) {
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
                             }
+                            //check datatype
                             if (column.DataType && typeof value[column.Name] != column.DataType) {
                                 That.ErrorOccured = true;
                                 That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
@@ -810,6 +708,7 @@ var JsStore;
                             checkAndModifyInternal(That.Table.Columns[Index++]);
                         };
                         if (!That.ErrorOccured) {
+                            //check auto increment scheme
                             if (column.AutoIncrement) {
                                 KeyStore.get("JsStore_" + Business.ActiveDataBase.Name + "_" + TableName + "_" + column.Name + "_Value", function (columnValue) {
                                     value[column.Name] = ++columnValue;
@@ -862,7 +761,7 @@ var JsStore;
                         };
                         Business.DbConnection.onversionchange = function (e) {
                             if (e.newVersion === null) {
-                                e.target.close();
+                                e.target.close(); // Manually close our connection to the db
                             }
                         };
                         Business.DbConnection.onerror = function (e) {
@@ -1528,18 +1427,24 @@ var JsStore;
                     };
                     _this.executeWhereJoinLogic = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length;
+                        //get the data from query table
                         new Select.Instance({
                             From: query.Table,
                             Where: query.Where,
                             Order: query.Order
                         }, function (results) {
+                            //perform join
                             results.forEach(function (value, index) {
+                                //search item through each global result
                                 for (var i = 0; i < ResultLength; i++) {
                                     Item = TmpResults[i][joinQuery.Table][joinQuery.Column];
+                                    //if (Item == value[query.Column]) {
                                     doJoin(Item, value, i);
+                                    //}
                                 }
                             });
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1553,17 +1458,21 @@ var JsStore;
                             Results[JoinIndex] = {};
                             if (value1 == value2[query.Column]) {
                                 Results[JoinIndex][query.Table] = value2;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                 }
                                 ++JoinIndex;
                             }
                             else if (query.JoinType == 'left') {
+                                //left join
                                 Results[JoinIndex] = {};
                                 Results[JoinIndex][query.Table] = null;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[itemIndex][That.QueryStack[j].Table];
                                 }
+                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         };
@@ -1571,6 +1480,7 @@ var JsStore;
                     _this.executeRightJoin = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1618,6 +1528,7 @@ var JsStore;
                     _this.executeWhereUndefinedLogicForJoin = function (joinQuery, query) {
                         var That = this, Results = [], JoinIndex = 0, Column = query.Column, TmpResults = That.Results, Item, ResultLength = TmpResults.length, ItemIndex = 0, Where = {}, onExecutionFinished = function () {
                             That.Results = Results;
+                            //check if further execution needed
                             if (That.QueryStack.length > That.CurrentQueryStackIndex + 1) {
                                 That.startExecutionJoinLogic();
                             }
@@ -1629,6 +1540,7 @@ var JsStore;
                                 results.forEach(function (value) {
                                     Results[JoinIndex] = {};
                                     Results[JoinIndex][query.Table] = value;
+                                    //copy other relative data into current result
                                     for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                         Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
                                     }
@@ -1636,11 +1548,14 @@ var JsStore;
                                 });
                             }
                             else if (query.JoinType == 'left') {
+                                //left join
                                 Results[JoinIndex] = {};
                                 Results[JoinIndex][query.Table] = null;
+                                //copy other relative data into current result
                                 for (var j = 0; j < That.CurrentQueryStackIndex; j++) {
                                     Results[JoinIndex][That.QueryStack[j].Table] = TmpResults[ItemIndex][That.QueryStack[j].Table];
                                 }
+                                //Results[JoinIndex][joinQuery.Table] = TmpResults[ItemIndex][joinQuery.Table];
                                 ++JoinIndex;
                             }
                         }, executeLogic = function () {
@@ -1670,7 +1585,7 @@ var JsStore;
                     _this.OnSuccess = onSuccess;
                     _this.OnError = onError;
                     _this.Query = query;
-                    var That = _this, TableList = [];
+                    var That = _this, TableList = []; // used to open the multiple object store
                     var convertQueryIntoStack = function (query) {
                         if (query.hasOwnProperty('Table1')) {
                             query.Table2['JoinType'] = query.Join == undefined ? 'inner' : query.Join.toLowerCase();
@@ -1689,6 +1604,7 @@ var JsStore;
                     };
                     convertQueryIntoStack(query.From);
                     _this.QueryStack.reverse();
+                    //get the data for first table
                     if (!_this.ErrorOccured) {
                         new Select.Instance({
                             From: _this.QueryStack[0].Table,
@@ -2354,14 +2270,17 @@ var JsStore;
                 }
                 Instance.prototype.checkSchema = function (suppliedValue, tableName) {
                     var CurrentTable = this.getTable(tableName), That = this;
+                    //loop through table column and find data is valid
                     CurrentTable.Columns.every(function (column) {
                         if (!That.ErrorOccured) {
                             if (column.Name in suppliedValue) {
                                 var executeCheck = function (value) {
+                                    //check not null schema
                                     if (column.NotNull && That.isNull(value)) {
                                         That.ErrorOccured = true;
                                         That.Error = JsStore.Utils.getError(JsStore.ErrorType.NullValue, false, { ColumnName: column.Name });
                                     }
+                                    //check datatype
                                     if (column.DataType && typeof value != column.DataType) {
                                         That.ErrorOccured = true;
                                         That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, false, { ColumnName: column.Name });
@@ -2644,6 +2563,148 @@ var JsStore;
         })(Delete = Business.Delete || (Business.Delete = {}));
     })(Business = JsStore.Business || (JsStore.Business = {}));
 })(JsStore || (JsStore = {}));
+var JsStore;
+(function (JsStore) {
+    var WebWorkerStatus;
+    (function (WebWorkerStatus) {
+        WebWorkerStatus["Registered"] = "registerd";
+        WebWorkerStatus["Failed"] = "failed";
+        WebWorkerStatus["NotStarted"] = "not_started";
+    })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
+    ;
+    JsStore.WorkerStatus = WebWorkerStatus.NotStarted;
+    var CodeExecutionHelper = (function () {
+        function CodeExecutionHelper() {
+            this.RequestQueue = [];
+            this.IsCodeExecuting = false;
+            this.prcoessExecutionOfCode = function (request) {
+                this.RequestQueue.push(request);
+                if (JsStore.EnableLog) {
+                    console.log("request pushed:" + request.Name);
+                }
+                if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
+                    this.executeCode();
+                }
+            };
+            this.executeCode = function () {
+                if (!this.IsCodeExecuting && this.RequestQueue.length > 0) {
+                    if (JsStore.EnableLog) {
+                        console.log("request executing" + this.RequestQueue[0].Name);
+                    }
+                    this.IsCodeExecuting = true;
+                    var Request = {
+                        Name: this.RequestQueue[0].Name,
+                        Query: this.RequestQueue[0].Query
+                    };
+                    if (JsStore.WorkerStatus == WebWorkerStatus.Registered) {
+                        this.executeCodeUsingWorker(Request);
+                    }
+                    else {
+                        this.executeCodeDirect(Request);
+                    }
+                }
+            };
+            this.executeCodeDirect = function (request) {
+                var That = this;
+                new JsStore.Business.Main(function (results) {
+                    That.processFinishedRequest(results);
+                }).checkConnectionAndExecuteLogic(request);
+            };
+            this.executeCodeUsingWorker = function (request) {
+                JsStore.WorkerInstance.postMessage(request);
+            };
+            this.processFinishedRequest = function (message) {
+                var FinishedRequest = this.RequestQueue.shift();
+                this.IsCodeExecuting = false;
+                if (FinishedRequest) {
+                    if (JsStore.EnableLog) {
+                        console.log("request finished:" + FinishedRequest.Name);
+                    }
+                    if (message.ErrorOccured) {
+                        if (FinishedRequest.OnError) {
+                            FinishedRequest.OnError(message.ErrorDetails);
+                        }
+                    }
+                    else {
+                        if (FinishedRequest.OnSuccess) {
+                            if (message.ReturnedValue != null) {
+                                FinishedRequest.OnSuccess(message.ReturnedValue);
+                            }
+                            else {
+                                FinishedRequest.OnSuccess();
+                            }
+                        }
+                    }
+                    this.executeCode();
+                }
+            };
+            this.onWorkerFailed = function () {
+                console.warn('JsStore is not runing in web worker');
+                JsStore.WorkerStatus = WebWorkerStatus.Failed;
+                this.executeCode();
+            };
+            this.createWorker = function () {
+                var That = this;
+                try {
+                    if (Worker) {
+                        var ScriptUrl = this.getScriptUrl();
+                        if (ScriptUrl && ScriptUrl.length > 0) {
+                            JsStore.WorkerInstance = new Worker(ScriptUrl);
+                            JsStore.WorkerInstance.onmessage = function (msg) {
+                                That.onMessageFromWorker(msg);
+                            };
+                            setTimeout(function () {
+                                if (JsStore.WorkerStatus != WebWorkerStatus.Failed) {
+                                    JsStore.WorkerStatus = WebWorkerStatus.Registered;
+                                }
+                                That.executeCode();
+                            }, 100);
+                        }
+                        else {
+                            That.onWorkerFailed();
+                        }
+                    }
+                    else {
+                        That.onWorkerFailed();
+                    }
+                }
+                catch (ex) {
+                    That.onWorkerFailed();
+                }
+            };
+            this.onMessageFromWorker = function (msg) {
+                var That = this;
+                if (typeof msg.data == 'string') {
+                    var Datas = msg.data.split(':')[1];
+                    switch (Datas) {
+                        case 'WorkerFailed':
+                            That.onWorkerFailed();
+                            break;
+                    }
+                }
+                else {
+                    this.processFinishedRequest(msg.data);
+                }
+            };
+        }
+        CodeExecutionHelper.prototype.getScriptUrl = function (fileName) {
+            var ScriptUrl = "";
+            var FileName = fileName ? fileName.toLowerCase() : "jsstore";
+            var Scripts = document.getElementsByTagName('script');
+            for (var i = Scripts.length - 1, url = ""; i >= 0; i--) {
+                url = Scripts[i].src;
+                url = url.substring(url.lastIndexOf('/') + 1).toLowerCase();
+                if (url.length > 0 && url.indexOf(FileName) >= 0) {
+                    ScriptUrl = Scripts[i].src;
+                    return ScriptUrl;
+                }
+            }
+            return ScriptUrl;
+        };
+        return CodeExecutionHelper;
+    }());
+    JsStore.CodeExecutionHelper = CodeExecutionHelper;
+})(JsStore || (JsStore = {}));
 var Model = JsStore.Model;
 var DataBase = Model.DataBase;
 var Column = Model.Column;
@@ -2670,6 +2731,16 @@ var JsStore;
             }
             return _this;
         }
+        /**
+         * creates DataBase
+         *
+         * @param {IDataBase} dataBase
+         * @param {Function} onSuccess
+         * @param {Function} [onError=null]
+         * @returns
+         *
+         * @memberOf Main
+         */
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
             if (onError === void 0) { onError = null; }
             this.prcoessExecutionOfCode({
@@ -2680,6 +2751,13 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * drop dataBase
+         *
+         * @param {Function} onSuccess
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.dropDb = function (onSuccess, onError) {
             if (onError === void 0) { onError = null; }
             this.prcoessExecutionOfCode({
@@ -2689,6 +2767,15 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * select data from table
+         *
+         * @param {IQuery} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         *
+         * @memberOf Main
+         */
         Instance.prototype.select = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2703,6 +2790,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * get no of result from table
+         *
+         * @param {ICount} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.count = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2717,6 +2812,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * insert data into table
+         *
+         * @param {IInsert} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.insert = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2731,6 +2834,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * update data into table
+         *
+         * @param {IUpdate} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.update = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2745,6 +2856,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * delete data from table
+         *
+         * @param {IDelete} query
+         * @param {Function} [onSuccess=null]
+         * @param {Function} onError
+         * @memberof Instance
+         */
         Instance.prototype.delete = function (query, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2759,6 +2878,14 @@ var JsStore;
             });
             return this;
         };
+        /**
+         * delete all data from table
+         *
+         * @param {string} tableName
+         * @param {Function} [onSuccess=null]
+         * @param {Function} [onError=null]
+         * @memberof Instance
+         */
         Instance.prototype.clear = function (tableName, onSuccess, onError) {
             if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
@@ -2774,6 +2901,45 @@ var JsStore;
     }(JsStore.CodeExecutionHelper));
     JsStore.Instance = Instance;
 })(JsStore || (JsStore = {}));
+(!self.alert);
+{
+    self.onmessage = function (e) {
+        if (JsStore.EnableLog) {
+            console.log("Request executing from WebWorker, request name:" + e.data.Name);
+        }
+        var Request = e.data, IndexDbObject = new JsStore.Business.Main();
+        IndexDbObject.checkConnectionAndExecuteLogic(Request);
+    };
+}
+var KeyStore;
+(function (KeyStore) {
+    var Utils = (function () {
+        function Utils() {
+        }
+        /**
+         * determine and set the DataBase Type
+         *
+         *
+         * @memberOf UtilityLogic
+         */
+        Utils.setDbType = function () {
+            self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
+            if (indexedDB) {
+                self.IDBTransaction = self.IDBTransaction || self.webkitIDBTransaction || self.msIDBTransaction;
+                self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange || self.msIDBKeyRange;
+            }
+            else if (!self.alert) {
+                console.log('worked failed');
+                self.postMessage('message:WorkerFailed');
+            }
+            else {
+                throw 'Your browser doesnot support IndexedDb';
+            }
+        };
+        return Utils;
+    }());
+    KeyStore.Utils = Utils;
+})(KeyStore || (KeyStore = {}));
 var KeyStore;
 (function (KeyStore) {
     var ConnectionStatus;
@@ -2831,29 +2997,6 @@ var KeyStore;
         }
         this.executeCode();
     };
-})(KeyStore || (KeyStore = {}));
-var KeyStore;
-(function (KeyStore) {
-    var Utils = (function () {
-        function Utils() {
-        }
-        Utils.setDbType = function () {
-            self.indexedDB = self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB;
-            if (indexedDB) {
-                self.IDBTransaction = self.IDBTransaction || self.webkitIDBTransaction || self.msIDBTransaction;
-                self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange || self.msIDBKeyRange;
-            }
-            else if (!self.alert) {
-                console.log('worked failed');
-                self.postMessage('message:WorkerFailed');
-            }
-            else {
-                throw 'Your browser doesnot support IndexedDb';
-            }
-        };
-        return Utils;
-    }());
-    KeyStore.Utils = Utils;
 })(KeyStore || (KeyStore = {}));
 var KeyStore;
 (function (KeyStore) {
@@ -3054,7 +3197,7 @@ var KeyStore;
                     };
                     Business.DbConnection.onversionchange = function (e) {
                         if (e.newVersion === null) {
-                            e.target.close();
+                            e.target.close(); // Manually close our connection to the db
                         }
                     };
                     Business.DbConnection.onerror = function (e) {
@@ -3167,6 +3310,10 @@ var KeyStore;
 })(KeyStore || (KeyStore = {}));
 var KeyStore;
 (function (KeyStore) {
+    /**
+     * Initialize KeyStore
+     *
+     */
     KeyStore.init = function () {
         KeyStore.Utils.setDbType();
         if (indexedDB) {
@@ -3176,6 +3323,13 @@ var KeyStore;
             });
         }
     };
+    /**
+    * return the value by key
+    *
+    * @param {string} key
+    * @param {Function} onSuccess
+    * @param {Function} [onError=null]
+    */
     KeyStore.get = function (key, onSuccess, onError) {
         if (onError === void 0) { onError = null; }
         var Query = {
@@ -3192,6 +3346,14 @@ var KeyStore;
         });
         return this;
     };
+    /**
+    * insert or update value
+    *
+    * @param {any} key
+    * @param {any} value
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
     KeyStore.set = function (key, value, onSuccess, onError) {
         if (onSuccess === void 0) { onSuccess = null; }
         if (onError === void 0) { onError = null; }
@@ -3210,6 +3372,13 @@ var KeyStore;
         });
         return this;
     };
+    /**
+    * delete value
+    *
+    * @param {string} key
+    * @param {Function} [onSuccess=null]
+    * @param {Function} [onError=null]
+    */
     KeyStore.remove = function (key, onSuccess, onError) {
         if (onSuccess === void 0) { onSuccess = null; }
         if (onError === void 0) { onError = null; }
