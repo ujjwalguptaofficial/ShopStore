@@ -1,4 +1,5 @@
 var WhereLogic = {},
+    MaxRowInPage = 5,
     NoOfPages = 0;
 
 function onPageLoaded() {
@@ -12,7 +13,7 @@ function createPagination() {
         From: 'Customer',
         Where: Object.keys(WhereLogic).length > 0 ? WhereLogic : null,
         OnSuccess: function (count) {
-            NoOfPages = parseInt(count / 10);
+            NoOfPages = Math.ceil(count / MaxRowInPage);
             var HtmlString = "";
             if (NoOfPages > 0) {
                 HtmlString += '<li id="liPrev"><a href="#!"><i class="material-icons">chevron_left</i></a></li>';
@@ -38,8 +39,8 @@ function createPagination() {
 function showCustomers(skip) {
     Db.DbConnection.select({
         From: 'Customer',
-        Limit: 10,
-        Skip: skip * 10,
+        Limit: MaxRowInPage,
+        Skip: skip * MaxRowInPage,
         OnSuccess: function (customers) {
             createCustomersList(customers);
         },
@@ -56,7 +57,7 @@ function deleteItem(itemRow) {
             Db.DbConnection.delete({
                     From: 'Customer',
                     Where: {
-                        CustomerId: Number(itemRow.attr('Id'))
+                        CustomerID: Number(itemRow.attr('Id'))
                     }
                 }, function (rowsAffected) {
                     if (rowsAffected > 0) {
@@ -129,21 +130,24 @@ function bindEvents() {
             case 'liPrev':
                 Skip = Number(ActiveElement.text());
                 if (Skip != 1) {
-                    --Skip;
+                    Skip -= 2
                     ActiveElement.removeClass('active');
                     ActiveElement.prev().addClass('active');
+                } else {
+                    Skip = 0;
                 }
                 break;
             case 'liNext':
                 Skip = Number(ActiveElement.text());
                 if (Skip != NoOfPages) {
-                    ++Skip;
                     ActiveElement.removeClass('active');
                     ActiveElement.next().addClass('active');
+                } else {
+                    Skip -= 1;
                 }
                 break;
             default:
-                Skip = Number($(this).text());
+                Skip = Number($(this).text()) - 1;
                 ActiveElement.removeClass('active');
                 $(this).addClass('active');
                 break;
@@ -174,12 +178,14 @@ function createCustomersList(customers) {
 
 function searchItems(skip) {
     if (Object.keys(WhereLogic).length > 0) {
-        createPagination();
+        if (skip == null) {
+            createPagination();
+        }
         Db.DbConnection.select({
             From: 'Customer',
             Where: WhereLogic,
-            Limit: 10,
-            Skip: skip * 10
+            Limit: MaxRowInPage,
+            Skip: skip * MaxRowInPage
         }, function (customers) {
             createCustomersList(customers);
         }, function (error) {
@@ -187,6 +193,17 @@ function searchItems(skip) {
             alert('Error Occured');
         })
     } else {
+        if (skip == null) {
+            createPagination();
+        }
         showCustomers(skip);
     }
+}
+
+function sortItem(type, column) {
+    Order = {
+        By: column,
+        Type: type
+    }
+    searchItems();
 }

@@ -1,4 +1,5 @@
-var RowInserted = false;
+var RowInserted = false,
+    IsErrorOccured = false;
 
 function onPageLoaded() {
     var Email = getQsValueByName('email');
@@ -30,7 +31,9 @@ function isQuantityValid(textbox) {
             TotalAmount += Number($(this).text());
         })
         $('#totalAmount').text(TotalAmount);
+        IsErrorOccured = false;
     } else {
+        IsErrorOccured = true;
         textbox.next().html('<i class="material-icons">close</i>');
     }
 }
@@ -46,13 +49,15 @@ function isItemValid(textbox) {
             TdList = Tr.find('td');
         if (items.length > 0) {
             textbox.next().html('<i class="material-icons">check</i>');
-            TdList.eq(0).attr('data-quantity', items[0].Quantity);
+            TdList.eq(0).attr('data-quantity', items[0].Unit);
             TdList.eq(1).text(items[0].ItemName);
             TdList.eq(2).text(items[0].Price);
             if (!Tr.next().html()) {
                 insertRow();
             }
+            IsErrorOccured = false;
         } else {
+            IsErrorOccured = true;
             textbox.next().html('<i class="material-icons">close</i>');
             TdList.eq(0).data('quantity', '');
             TdList.eq(1).text("");
@@ -86,10 +91,10 @@ function submit() {
             }
         }, function (customers) {
             if (customers.length > 0) {
-                $('#divCustomerDetail').attr('data-customerId', customers[0].CustomerId)
+                $('#divCustomerDetail').attr('data-customerId', customers[0].CustomerID)
                 $('#divCustomerName span').last().text(customers[0].CustomerName);
-                $('#divCustomerMobile span').last().text(customers[0].MobNo);
-                $('#divCustomerDob span').last().text(customers[0].Dob);
+                $('#divCustomerEmail span').last().text(customers[0].Email);
+                $('#divCustomerAddress span').last().text(customers[0].Address);
                 $('#divInputContainer').hide();
                 $('#divBillingContainer').show(500);
             } else {
@@ -109,28 +114,32 @@ function submit() {
 }
 
 function CreateReceipt() {
-    var CustomerId = $('#divCustomerDetail').attr('data-customerId'),
-        Value = {
-            CustomerId: Number(CustomerId),
-            Total: Number($('#totalAmount').text())
-        };
-    Db.DbConnection.insert({
-        Into: 'Order',
-        Return: true, // this will return the inserted datas
-        Values: [Value]
-    }, function (values) {
-        if (values.length > 0) {
-            var OrderId = values[0].OrderId;
-            if (OrderId) {
-                insertShoppingList(OrderId);
+    if (!IsErrorOccured) {
+        var CustomerId = $('#divCustomerDetail').attr('data-customerId'),
+            Value = {
+                CustomerId: Number(CustomerId),
+                Total: Number($('#totalAmount').text())
+            };
+        Db.DbConnection.insert({
+            Into: 'Order',
+            Return: true, // this will return the inserted datas
+            Values: [Value]
+        }, function (values) {
+            if (values.length > 0) {
+                var OrderId = values[0].OrderId;
+                if (OrderId) {
+                    insertShoppingList(OrderId);
+                }
+            } else {
+                DialogBox.alert('Error Occured');
             }
-        } else {
+        }, function (error) {
+            console.log(error);
             DialogBox.alert('Error Occured');
-        }
-    }, function (error) {
-        console.log(error);
-        DialogBox.alert('Error Occured');
-    })
+        })
+    } else {
+        DialogBox.alert('Please correct all error');
+    }
 }
 
 function insertShoppingList(orderId) {

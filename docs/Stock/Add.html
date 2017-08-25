@@ -29,8 +29,8 @@
             <ul id="nav-mobile" class="right">
                 <li><a href="../index.html">Home</a></li>
                 <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
-                <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
-                <li class="active"><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li class="active"><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                <li><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
             </ul>
             <div class="brand-logo center-align">
                 <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
@@ -49,8 +49,8 @@
                 <label for="txtPrice" data-error="wrong" data-success="right">Item Price</label>
             </div>
             <div class="input-field col s12">
-                <input placeholder="Enter Item Quantity" id="txtQuantity" type="number" class="validate">
-                <label for="txtQuantity" data-error="wrong" data-success="right">Item Quantity</label>
+                <input placeholder="Enter Item Unit" id="txtUnit" type="number" class="validate">
+                <label for="txtQuantity" data-error="wrong" data-success="right">Item Unit</label>
             </div>
             <a class="waves-effect waves-light btn" onclick="isInputValid();"><i class="material-icons left">done</i>Add</a>
             <a id='btnCancel' class="waves-effect waves-light btn"><i class="material-icons left">close</i>Cancel</a>
@@ -59,56 +59,10 @@
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.3.js"></script>
+    <script src="../Scripts/JsStore-1.1.0.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
-    <script>
-        function isInputValid() {
-            var EItemName = $('#txtName'),
-                EItemPrice = $('#txtPrice'),
-                EItemQuantity = $('#txtQuantity'),
-                ErrorOccured = false;
-
-            if (Validator.isInvalid(EItemName.val())) {
-                ErrorOccured = true;
-                EItemName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-            if (Validator.isInvalid(EItemPrice.val(), {
-                    Type: "number"
-                })) {
-                ErrorOccured = true;
-                EItemPrice.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-            if (Validator.isInvalid(EItemQuantity.val(), {
-                    Type: 'number'
-                })) {
-                ErrorOccured = true;
-                EItemQuantity.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-            }
-
-            if (!ErrorOccured) {
-                var Value = {
-                    ItemName: EItemName.val(),
-                    Price: Number(EItemPrice.val()),
-                    Quantity: Number(EItemQuantity.val())
-                };
-                Db.DbConnection.insert({
-                    Into: "Stock",
-                    Values: [Value]
-                }, function (rowsCount) {
-                    if (rowsCount > 0) {
-                        DialogBox.alert('Successfully Added');
-                        $('form')[0].reset();
-                    }
-                }, function (error) {
-                    if (error) {
-                        DialogBox.alert('Error Occured');
-                    }
-                    console.log(error);
-                })
-            }
-        }
-    </script>
+    <script src="add.js"></script>
 </body>
 
 </html>

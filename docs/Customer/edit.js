@@ -1,21 +1,21 @@
 function onPageLoaded() {
     getCustomerDetail(Number(getQsValueByName('id')))
-    $('.datepicker').pickadate({
-        selectMonths: true, // Creates a dropdown to control month
-        selectYears: 100 // Creates a dropdown of 15 years to control year
-    });
 }
 
 function getCustomerDetail(id) {
     Db.DbConnection.select({
         From: 'Customer',
         Where: {
-            CustomerId: id
+            CustomerID: id
         }
     }, function (customer) {
         $('#txtName').val(customer[0].CustomerName);
-        $('#txtDob').val(customer[0].Dob);
+        $('#txtCName').val(customer[0].ContactName);
         $('#txtEmail').val(customer[0].Email);
+        $('#txtAddress').val(customer[0].Address);
+        $('#txtCity').val(customer[0].City);
+        $('#txtPostalCode').val(customer[0].PostalCode);
+        $('#txtCountry').val(customer[0].Country);
     }, function (error) {
         console.log(error);
         alert('Error Occured');
@@ -23,38 +23,59 @@ function getCustomerDetail(id) {
 }
 
 function update() {
-    var ECustomerName = $('#txtName'),
-        ECustomerDob = $('#txtDob'),
-        ECustomerEmail = $('#txtEmail');
+    var CustomerName = $('#txtName'),
+        ContactName = $('#txtCName'),
+        CustomerEmail = $('#txtEmail'),
+        Address = $('#txtAddress'),
+        City = $('#txtCity'),
+        PostalCode = $('#txtPostalCode'),
+        Country = $('#txtCountry')
+
     Validator.startValidation();
-    if (Validator.isInvalid(ECustomerName.val())) {
-        ECustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    if (Validator.isInvalid(CustomerName.val())) {
+        CustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    } else if (ContactName.val().length == 0) {
+        ContactName.val(CustomerName.val().split(' ')[0])
     }
-    if (Validator.isInvalid(ECustomerDob.val())) {
-        ECustomerDob.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-    }   
-    if (Validator.isInvalid(ECustomerEmail.val(), {
+    if (Validator.isInvalid(CustomerEmail.val(), {
             Type: 'email'
         })) {
-        ECustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+        CustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
     }
+    if (Validator.isInvalid(Address.val())) {
+        Address.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(City.val())) {
+        City.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(PostalCode.val())) {
+        PostalCode.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(Country.val())) {
+        Country.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+
 
     if (!Validator.IsAnyError) {
         var Value = {
-            CustomerName: ECustomerName.val(),
-            Email: ECustomerEmail.val(),
-            Dob: ECustomerDob.val()
+            CustomerName: CustomerName.val(),
+            ContactName: ContactName.val(),
+            Email: CustomerEmail.val(),
+            Address: Address.val(),
+            City: City.val(),
+            PostalCode: PostalCode.val(),
+            Country: Country.val()
         };
         Db.DbConnection.update({
             In: "Customer",
             Set: Value,
             Where: {
-                CustomerId: Number(getQsValueByName('id'))
+                CustomerID: Number(getQsValueByName('id'))
             }
         }, function (rowsCount) {
             if (rowsCount > 0) {
                 DialogBox.alert('Successfully Updated');
-                window.location.href='index.html'
+                window.location.href = 'index.html'
             }
         }, function (error) {
             if (error) {

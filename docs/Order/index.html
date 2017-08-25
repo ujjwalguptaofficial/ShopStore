@@ -38,7 +38,7 @@
         </div>
     </nav>
     <div class="row center-align">
-        <div class="col s12 m8 l6 xl4 push-s0 push-m2 push-l3 push-xl4 right-alert">
+        <div class="col s12 m10 l8 xl6 push-m1 push-l2 push-xl3 right-alert">
             <table id="tblOrder">
                 <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
                 <thead>
@@ -50,7 +50,7 @@
                         <th></th>
                     </tr>
                     <tr id="trHeading">
-                        <th data-name="ReceiptId">Order Id</th>
+                        <th data-name="OrderId">Order Id</th>
                         <th data-name="CustomerName">Customer Name</th>
                         <th data-name="PurchaseDate">Purchase Date</th>
                         <th data-name="Total">Total</th>
@@ -65,7 +65,7 @@
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.3.js"></script>
+    <script src="../Scripts/JsStore-1.1.0.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
     <style>
@@ -87,193 +87,7 @@
             box-sizing: border-box;
         }
     </style>
-    <script>
-        var CustomerWhereInLogic,
-            WhereInLogic = [];
-        onPageLoaded = function () {
-            showOrderItems();
-            bindEvents();
-        }
-
-        function showOrderItems() {
-            var FromLogic = {
-                Table1: {
-                    Table: 'Order',
-                    Column: 'CustomerId',
-                    Order: {
-                        By: 'PurchaseDate',
-                        Type: 'desc'
-                    }
-                },
-                Join: 'left',
-                Table2: {
-                    Table: 'Customer',
-                    Column: 'CustomerId'
-                }
-            };
-            Db.DbConnection.select({
-                From: FromLogic
-            }, function (stocks) {
-                console.log(stocks);
-                createItemsList(stocks);
-            }, function (error) {
-                console.log(error);
-                alert('Error Occured');
-            })
-        }
-
-        function createItemsList(orders) {
-            var TableBody = document.querySelector('#tblOrder tbody');
-            TableBody.innerHTML = "";
-            orders.forEach(function (item) {
-                if (item.Customer != null) {
-                    var Customer = item.Customer,
-                        Order = item.Order;
-                    Tr = document.createElement('tr');
-                    Tr.innerHTML = "<td>" + Order.OrderId + "</td><td>" + Customer.CustomerName +
-                        "</td><td>" + Order.Date +
-                        "</td><td>" + Order.Total +
-                        "</td><td class='print'><i class='material-icons'>print</i></td>";
-                    TableBody.appendChild(Tr);
-                }
-            });
-        }
-
-        function searchItems() {
-            if (WhereInLogic.length > 0 || CustomerWhereInLogic) {
-                var FromLogic = {
-                    Table1: {
-                        Table: 'Receipt',
-                        Column: 'CustomerId',
-                        Order: {
-                            By: 'PurchaseDate',
-                            Type: 'desc'
-                        },
-                        WhereIn: WhereInLogic
-                    },
-                    Join: 'left',
-                    Table2: {
-                        Table: 'Customer',
-                        Column: 'CustomerId',
-                        WhereIn: CustomerWhereInLogic
-                    }
-                };
-
-                Db.DbConnection.select({
-                    From: FromLogic
-                }, function (stocks) {
-                    createItemsList(stocks);
-                }, function (error) {
-                    console.log(error);
-                    alert('Error Occured');
-                })
-
-            } else {
-                showOrderItems();
-            }
-        }
-
-        function sortItem(type, column) {
-            Db.DbConnection.select({
-                From: 'Stock',
-                Order: {
-                    By: column,
-                    Type: type
-                }
-            }, function (stocks) {
-                createItemsList(stocks);
-            }, function (error) {
-                console.log(error);
-                alert('Error Occured');
-            })
-        }
-
-        function bindEvents() {
-            $('table#tblOrder').on('click', 'tr td.print', function () {
-                window.location.href = "../print.html?order_id=" + $(this).parent().find('td:first').text();
-            })
-
-            $('#tblOrder tr#trHeading th').click(function () {
-                var Text = $(this).text();
-                if (Text.length > 0) {
-                    var SortType = $(this).attr('sortType');
-                    if (SortType) {
-                        $(this).attr('sortType', SortType == 'asc' ? 'desc' : 'asc')
-                    } else {
-                        SortType = 'asc';
-                        $(this).attr('sortType', 'desc');
-                    }
-                    if (Text == 'Name') {
-                        Text = 'ItemName';
-                    }
-                    sortItem(SortType, Text);
-                }
-            });
-
-            $('#tblOrder tr#trSearch th input').keyup(function () {
-                var Value = $(this).val(),
-                    Query = {
-                        Column: null,
-                        Value: null,
-                        Op: null
-                    };
-                CustomerWhereInLogic = null
-                switch ($(this).parent().index()) {
-                    case 0:
-                        Query.Column = 'ReceiptId';
-                        Query.Value = Number(Value);
-                        Query.Op = '=';
-                        var ItemIndex = indexOfColumnInWhereInLogic(Query.Column);
-                        if (Value.length > 0 && ItemIndex < 0) {
-                            WhereInLogic.push(Query)
-                        } else if (Value.length == 0) {
-                            deleteFromWhereIn(Query.Column);
-                        } else {
-                            WhereInLogic[ItemIndex] = Query;
-                        }
-                        break;
-                    case 1:
-                        CustomerWhereInLogic = {
-                            Column: 'CustomerName',
-                            Value: Value,
-                            Op: '~'
-                        }
-                        break;
-
-                    case 3:
-                        Query.Column = 'Total';
-                        Query.Value = Number(Value);
-                        Query.Op = '>=';
-                        var ItemIndex = indexOfColumnInWhereInLogic(Query.Column);
-                        if (Value.length > 0 && ItemIndex < 0) {
-                            WhereInLogic.push(Query)
-                        } else if (Value.length == 0) {
-                            deleteFromWhereIn(Query.Column);
-                        } else {
-                            WhereInLogic[ItemIndex] = Query;
-                        }
-                        break;
-                }
-                searchItems();
-            });
-
-            function indexOfColumnInWhereInLogic(columnName) {
-                var Index = -1;
-                WhereInLogic.every(function (item, index) {
-                    if (item.Column == columnName) {
-                        Index = index;
-                        return false;
-                    }
-                    return true;
-                })
-                return Index;
-            }
-
-            function deleteFromWhereIn(columnName) {
-                WhereInLogic.splice(indexOfColumnInWhereInLogic(), 1);
-            }
-        }
-    </script>
+    <script src="index.js"></script>
 </body>
 
 </html>

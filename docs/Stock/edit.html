@@ -49,8 +49,8 @@
                 <label for="txtPrice" data-error="wrong" data-success="right">Item Price</label>
             </div>
             <div class="input-field col s12">
-                <input placeholder="Enter Item Quantity" id="txtQuantity" type="number" class="validate">
-                <label for="txtQuantity" data-error="wrong" data-success="right">Item Quantity</label>
+                <input placeholder="Enter Item Quantity" id="txtUnit" type="number" class="validate">
+                <label for="txtUnit" data-error="wrong" data-success="right">Item Quantity</label>
             </div>
             <a class="waves-effect waves-light btn" onclick="updateData();"><i class="material-icons left">done</i>Update</a>
             <a id='btnCancel' class="waves-effect waves-light btn" onclick="location.href='index.html'"><i class="material-icons left">close</i>Cancel</a>
@@ -59,12 +59,12 @@
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.3.js"></script>
+    <script src="../Scripts/JsStore-1.1.0.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
     <script>
         var Validator;
-        window.onload = function () {
+        onPageLoaded = function () {
             getStockItem(Number(getQsValueByName('id')));
             Validator = new JsValidator();
         }
@@ -78,7 +78,7 @@
             }, function (stocks) {
                 $('#txtName').val(stocks[0].ItemName);
                 $('#txtPrice').val(stocks[0].Price);
-                $('#txtQuantity').val(stocks[0].Quantity);
+                $('#txtUnit').val(stocks[0].Unit);
             }, function (error) {
                 console.log(error);
                 alert('Error Occured');
@@ -100,7 +100,7 @@
         function updateData() {
             var EItemName = $('#txtName'),
                 EItemPrice = $('#txtPrice'),
-                EItemQuantity = $('#txtQuantity'),
+                EItemUnit = $('#txtUnit'),
                 ErrorOccured = false;
 
             if (Validator.isInvalid(EItemName.val())) {
@@ -113,11 +113,11 @@
                 ErrorOccured = true;
                 EItemPrice.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
             }
-            if (Validator.isInvalid(EItemQuantity.val(), {
+            if (Validator.isInvalid(EItemUnit.val(), {
                     Type: "number"
                 })) {
                 ErrorOccured = true;
-                EItemQuantity.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+                EItemUnit.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
             }
 
             if (!ErrorOccured) {
@@ -126,7 +126,7 @@
                     Set: {
                         ItemName: EItemName.val(),
                         Price: Number(EItemPrice.val()),
-                        Quantity: Number(EItemQuantity.val())
+                        Unit: Number(EItemUnit.val())
                     },
                     Where: {
                         ItemId: Number(getQsValueByName('id'))

@@ -46,3 +46,15 @@
  nav {
      margin-bottom: 40px;
  }
+
+ .margin-top-20px {
+     margin-top: 20px;
+ }
+
+ .edit {
+     padding: 15px;
+ }
+
+ .delete {
+     padding: 15px;
+ }

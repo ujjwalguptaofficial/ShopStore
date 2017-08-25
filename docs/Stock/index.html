@@ -43,16 +43,16 @@
                 <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
                 <thead>
                     <tr id="trSearch">
-                        <th><input type="text" placeholder="Item Name"></th>
-                        <th><input type="text" placeholder="Price"></th>
-                        <th><input type="text" placeholder="Quantity"></th>
+                        <th><input  type="text" placeholder="Item Name"></th>
+                        <th><input  type="text" placeholder="Price"></th>
+                        <th><input  type="text" placeholder="Unit"></th>
                         <th></th>
                         <th></th>
                     </tr>
                     <tr id="trHeading">
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
+                        <th data-column='ItemName'>Name</th>
+                        <th data-column='Price'>Price</th>
+                        <th data-column='Unit'>Unit</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -60,12 +60,15 @@
                 <tbody>
                 </tbody>
             </table>
+            <ul class="pagination">
+                
+             </ul>
         </div>
     </div>
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>
     <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
     <script src="../Scripts/JsValidator.js"></script>
-    <script src="../Scripts/JsStore-1.0.3.js"></script>
+    <script src="../Scripts/JsStore-1.1.0.js"></script>
     <script src="../Scripts/DbStructure.js"></script>
     <script src="../Scripts/common.js"></script>
     <style>
@@ -87,173 +90,7 @@
             box-sizing: border-box;
         }
     </style>
-    <script>
-        var WhereLogic = {};
-        onPageLoaded = function () {
-            showStockItems();
-            bindEvents();
-        }
-
-        function showStockItems() {
-            Db.DbConnection.select({
-                From: 'Stock'
-            }, function (stocks) {
-                createItemsList(stocks);
-            }, function (error) {
-                console.log(error);
-                alert('Error Occured');
-            })
-        }
-
-        function createItemsList(stocks) {
-            var TableBody = document.querySelector('#tblStock tbody');
-            TableBody.innerHTML = "";
-            stocks.forEach(function (stock) {
-                var Tr = document.createElement('tr');
-                Tr.setAttribute('id', stock.ItemId);
-                Tr.innerHTML = "<td>" + stock.ItemName + "</td><td>" + stock.Price + "</td><td>" +
-                    stock.Unit +
-                    "</td><td class='edit'><i class='material-icons'>edit</i></td><td class='delete'><i class='material-icons'>delete</i></td>";
-                TableBody.appendChild(Tr);
-            });
-        }
-
-        function searchItems() {
-            if (Object.keys(WhereLogic).length > 0) {
-                Db.DbConnection.select({
-                    From: 'Stock',
-                    Where: WhereLogic
-                }, function (stocks) {
-                    createItemsList(stocks);
-                }, function (error) {
-                    console.log(error);
-                    alert('Error Occured');
-                })
-            } else {
-                showStockItems();
-            }
-        }
-
-        function deleteItem(itemRow) {
-            Db.DbConnection.delete({
-                    From: 'stock',
-                    Where: {
-                        ItemId: Number(itemRow.attr('Id'))
-                    }
-                }, function (rowsAffected) {
-                    if (rowsAffected > 0) {
-                        itemRow.remove();
-                    } else {
-                        alert('No item deleted');
-                    }
-                },
-                function (error) {
-                    console.log(error);
-                    alert('Error Occured')
-                })
-
-        }
-
-        function sortItem(type, column) {
-            Db.DbConnection.select({
-                From: 'Stock',
-                Order: {
-                    By: column,
-                    Type: type
-                }
-            }, function (stocks) {
-                createItemsList(stocks);
-            }, function (error) {
-                console.log(error);
-                alert('Error Occured');
-            })
-        }
-
-        function bindEvents() {
-            $('table#tblStock').on('click', 'tr td.delete', function () {
-                var ItemRow = $(this).parent();
-                deleteItem(ItemRow);
-            })
-
-            $('table#tblStock').on('click', 'tr td.edit', function () {
-                window.location.href = "edit.html?id=" + $(this).parent().attr('Id');
-            })
-            $('#tblStock tr#trHeading th').click(function () {
-                var Text = $(this).text();
-                if (Text.length > 0) {
-                    var SortType = $(this).attr('sortType');
-                    if (SortType) {
-                        $(this).attr('sortType', SortType == 'asc' ? 'desc' : 'asc')
-                    } else {
-                        SortType = 'asc';
-                        $(this).attr('sortType', 'desc');
-                    }
-                    if (Text == 'Name') {
-                        Text = 'ItemName';
-                    }
-                    sortItem(SortType, Text);
-                }
-            })
-            $('#tblStock tr#trSearch th input').keyup(function () {
-
-                var Value = $(this).val(),
-                    ColumnName;
-                switch ($(this).parent().index()) {
-                    case 0:
-                        ColumnName = 'ItemName';
-                        //if value is not null and item exist or does not exist
-                        if (Value.length > 0) {
-                            WhereLogic[ColumnName] = {
-                                Like: '%' + Value + '%'
-                            }
-                        } else { // item exist and value is null
-                            delete WhereLogic[ColumnName];
-                        }
-                        break;
-                    case 1:
-                        ColumnName = 'Price';
-                        //if value is not null and item exist or does not exist
-                        if (Value.length > 0) {
-                            WhereLogic[ColumnName] = {
-                                '<=': Number(Value)
-                            }
-                        } else { // item exist and value is null
-                            delete WhereLogic[ColumnName];
-                        }
-                        break;
-                    case 2:
-                        ColumnName = 'Unit';
-                        //if value is not null and item exist or does not exist
-                        if (Value.length > 0) {
-                            WhereLogic[ColumnName] = {
-                                '>=': Number(Value)
-                            }
-                        } else { // item exist and value is null
-                            delete WhereLogic[ColumnName];
-                        }
-                        break;
-                }
-
-                searchItems();
-            });
-
-            function indexOfColumnInWhereInLogic(columnName) {
-                var Index = -1;
-                WhereInLogic.every(function (item, index) {
-                    if (item.Column == columnName) {
-                        Index = index;
-                        return false;
-                    }
-                    return true;
-                })
-                return Index;
-            }
-
-            function deleteFromWhereIn(columnName) {
-                WhereInLogic.splice(indexOfColumnInWhereInLogic(), 1);
-            }
-        }
-    </script>
+    <script src="index.js"></script>
 </body>
 
 </html>

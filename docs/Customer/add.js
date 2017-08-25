@@ -1,9 +1,4 @@
 onPageLoaded = function () {
-    $('.datepicker').pickadate({
-        selectMonths: true, // Creates a dropdown to control month
-        selectYears: 100, // Creates a dropdown of 15 years to control year,
-        format: 'yyyy-mm-dd'
-    });
     var Email = getQsValueByName('email');
     if (Email != null) {
         $('#txtEmail').focus().val(Email);
@@ -11,26 +6,47 @@ onPageLoaded = function () {
 }
 
 function save() {
-    var ECustomerName = $('#txtName'),
-        ECustomerDob = $('#txtDob'),
-        ECustomerEmail = $('#txtEmail');
+    var CustomerName = $('#txtName'),
+        ContactName = $('#txtCName'),
+        CustomerEmail = $('#txtEmail'),
+        Address = $('#txtAddress'),
+        City = $('#txtCity'),
+        PostalCode = $('#txtPostalCode'),
+        Country = $('#txtCountry')
+
     Validator.startValidation();
-    if (Validator.isInvalid(ECustomerName.val())) {
-        ECustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    if (Validator.isInvalid(CustomerName.val())) {
+        CustomerName.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    } else if (ContactName.val().length == 0) {
+        ContactName.val(CustomerName.val().split(' ')[0])
     }
-    if (Validator.isInvalid(ECustomerDob.val())) {
-        ECustomerDob.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
-    }
-    if (Validator.isInvalid(ECustomerEmail.val(), {
+    if (Validator.isInvalid(CustomerEmail.val(), {
             Type: 'email'
         })) {
-        ECustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+        CustomerEmail.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
     }
+    if (Validator.isInvalid(Address.val())) {
+        Address.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(City.val())) {
+        City.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(PostalCode.val())) {
+        PostalCode.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+    if (Validator.isInvalid(Country.val())) {
+        Country.addClass('invalid').next().attr('data-error', Validator.ErrMsg);
+    }
+
     if (!Validator.IsAnyError) {
         var Value = {
-            CustomerName: ECustomerName.val(),
-            Email: ECustomerEmail.val(),
-            Dob: ECustomerDob.val()
+            CustomerName: CustomerName.val(),
+            ContactName: ContactName.val(),
+            Email: CustomerEmail.val(),
+            Address: Address.val(),
+            City: City.val(),
+            PostalCode: PostalCode.val(),
+            Country: Country.val()
         };
         Db.DbConnection.insert({
             Into: "Customer",
