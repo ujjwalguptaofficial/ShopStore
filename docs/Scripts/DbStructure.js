@@ -145,7 +145,7 @@ function getDbStructure() {
 }
 
 function insertCustomers() {
-    $.getJSON("/Customer/Customers.json", function (results) {
+    $.getJSON("Customer/Customers.json", function (results) {
         setStatusMsg('Inserting data into table Customers');
         Db.DbConnection.insert({
             Into: 'Customer',
@@ -164,7 +164,7 @@ function insertCustomers() {
 }
 
 function insertProducts() {
-    $.getJSON("/Stock/Stocks.json", function (results) {
+    $.getJSON("Stock/Stocks.json", function (results) {
         setStatusMsg('Inserting data into table Products');
         Db.DbConnection.insert({
             Into: 'Stock',
