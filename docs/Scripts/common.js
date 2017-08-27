@@ -1,5 +1,6 @@
 var Validator, DialogBox;
 $(document).ready(function () {
+    insertMenu();
     Db.initiate(function () {
         if (typeof onPageLoaded !== "undefined") {
             onPageLoaded();
@@ -22,7 +23,6 @@ $(document).ready(function () {
     $('#btnCancel').click(function () {
         window.history.back();
     })
-
 });
 
 function getQsValueByName(name, url) {
@@ -45,4 +45,61 @@ function loadPage(containerId, pageUrl, callBack) {
             callBack();
         }
     });
+}
+
+function insertMenu() {
+    var HtmlString;
+    if (typeof IsIndex == 'undefined') {
+        HtmlString = `<ul id="listCustomer" class="dropdown-content">
+                    <li><a href="../Customer/add.html">Add</a></li>
+                    <li><a href="../Customer/index.html">List</a></li>
+                </ul>
+                <ul id="listStock" class="dropdown-content">
+                    <li><a href="../Stock/add.html">Add</a></li>
+                    <li><a href="../Stock/index.html">List</a></li>
+                </ul>
+                <ul id="listOrder" class="dropdown-content">
+                    <li><a href="../Order/index.html">List</a></li>
+                </ul>
+                <nav class="nav-extended">
+                    <div class="nav-wrapper">
+                        <ul id="nav-mobile" class="right">
+                            <li><a href="../index.html">Home</a></li>
+                            <li class="active"><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                            <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                            <li><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
+                        </ul>
+                        <div class="brand-logo center-align">
+                            <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
+                        </div>
+                    </div>
+                </nav>`;
+    } else {
+        HtmlString = `
+        <ul id="listCustomer" class="dropdown-content">
+            <li><a href="Customer/add.html">Add</a></li>
+            <li><a href="Customer/index.html">List</a></li>
+        </ul>
+        <ul id="listStock" class="dropdown-content">
+            <li><a href="Stock/add.html">Add</a></li>
+            <li><a href="Stock/index.html">List</a></li>
+        </ul>
+        <ul id="listOrder" class="dropdown-content">
+            <li><a href="Order/index.html">List</a></li>
+        </ul>
+        <nav class="nav-extended">
+            <div class="nav-wrapper">
+                <ul id="nav-mobile" class="right">
+                    <li class="active"><a href="index.html">Home</a></li>
+                    <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
+                    <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
+                    <li><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
+                </ul>
+                <div class="brand-logo center-align">
+                    <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
+                </div>
+            </div>
+        </nav>`;
+    }
+    $('#divNavContainer').html(HtmlString);
 }

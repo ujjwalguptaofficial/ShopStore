@@ -13,39 +13,16 @@
 </head>
 
 <body>
-    <ul id="listCustomer" class="dropdown-content">
-        <li><a href="../customer/add.html">Add</a></li>
-        <li><a href="../customer/index.html">List</a></li>
-    </ul>
-    <ul id="listStock" class="dropdown-content">
-        <li><a href="../stock/add.html">Add</a></li>
-        <li><a href="../stock/index.html">List</a></li>
-    </ul>
-    <ul id="listOrder" class="dropdown-content">
-        <li><a href="../Order/index.html">List</a></li>
-    </ul>
-    <nav class="nav-extended">
-        <div class="nav-wrapper">
-            <ul id="nav-mobile" class="right">
-                <li><a href="../index.html">Home</a></li>
-                <li><a class="dropdown-button" href="#!" data-activates="listCustomer">Customer<i class="material-icons right">arrow_drop_down</i></a></li>
-                <li><a class="dropdown-button" href="#!" data-activates="listStock">Stock<i class="material-icons right">arrow_drop_down</i></a></li>
-                <li class="active"><a class="dropdown-button" href="#!" data-activates="listOrder">Order<i class="material-icons right">arrow_drop_down</i></a></li>
-            </ul>
-            <div class="brand-logo center-align">
-                <a href="#" title="Download MatDialog" class="logo">ShopDemo</a><br>
-            </div>
-        </div>
-    </nav>
+    <div id='divNavContainer'></div>
     <div class="row center-align">
         <div class="col s12 m10 l8 xl6 push-s0 push-m1 push-l2 push-xl3 right-alert">
             <table id="tblStock">
                 <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
                 <thead>
                     <tr id="trSearch">
-                        <th><input  type="text" placeholder="Item Name"></th>
-                        <th><input  type="text" placeholder="Price"></th>
-                        <th><input  type="text" placeholder="Unit"></th>
+                        <th><input type="text" placeholder="Item Name"></th>
+                        <th><input type="text" placeholder="Price"></th>
+                        <th><input type="text" placeholder="Unit"></th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -61,8 +38,8 @@
                 </tbody>
             </table>
             <ul class="pagination">
-                
-             </ul>
+
+            </ul>
         </div>
     </div>
     <script src="../Scripts/matdialog.min-1.0.0.js"></script>

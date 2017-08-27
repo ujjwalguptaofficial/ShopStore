@@ -1,4 +1,5 @@
-var RowInserted = false,
+var IsIndex = true,
+    RowInserted = false,
     IsErrorOccured = false;
 
 function onPageLoaded() {
