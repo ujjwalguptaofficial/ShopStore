@@ -109,7 +109,7 @@ function showCustomerData(callBack) {
             $('#divCustomerDetail').attr('data-customerId', Customer.CustomerId)
             $('#divCustomerName span').last().text(Customer.CustomerName);
             $('#divCustomerEmail span').last().text(Customer.Email);
-            $('#divCustomerDob span').last().text(Customer.Dob);
+            $('#divCustomerDob span').last().text(Customer.Address);
             if (callBack != null) {
                 callBack();
             }
