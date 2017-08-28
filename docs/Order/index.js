@@ -49,22 +49,22 @@ function createItemsList(orders) {
 }
 
 function searchItems() {
-    if (WhereInLogic.length > 0 || CustomerWhereInLogic) {
+    if (Object.keys(WhereLogic).length > 0) {
         var FromLogic = {
             Table1: {
-                Table: 'Receipt',
+                Table: 'Order',
                 Column: 'CustomerId',
                 Order: {
                     By: 'PurchaseDate',
                     Type: 'desc'
                 },
-                WhereIn: WhereInLogic
+                Where: WhereLogic
             },
             Join: 'left',
             Table2: {
                 Table: 'Customer',
                 Column: 'CustomerId',
-                WhereIn: CustomerWhereInLogic
+                Where: CustomerWhereInLogic
             }
         };
 
