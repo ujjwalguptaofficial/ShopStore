@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <title>JsStorage Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link href="../materialize/css/materialize.min.css" rel="stylesheet " type="text/css" />
+    <script src="../Scripts/jquery.js"></script>
+    <script src="../materialize/js/materialize.min.js"></script>
+    <link href="../Style/common.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <div id='divNavContainer'></div>
+    <div class="row center-align">
+        <div class="col s12 m10 l8 xl6 push-s0 push-m1 push-l2 push-xl3 right-alert">
+            <table id="tblStock">
+                <caption class="#bf360c deep-orange darken-4 color-white padding-10-px">Items In Store</caption>
+                <thead>
+                    <tr id="trSearch">
+                        <th><input type="text" placeholder="Item Name"></th>
+                        <th><input type="text" placeholder="Price"></th>
+                        <th><input type="text" placeholder="Unit"></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr id="trHeading">
+                        <th data-column='ItemName'>Name</th>
+                        <th data-column='Price'>Price</th>
+                        <th data-column='Unit'>Unit</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <ul class="pagination">
+
+            </ul>
+        </div>
+    </div>
+    <script src="../Scripts/matdialog.min-1.0.0.js"></script>
+    <link href="../Style/matdialog.min-1.0.0.css" rel="stylesheet" type="text/css" />
+    <script src="../Scripts/JsValidator.js"></script>
+    <script src="../Scripts/JsStore-1.1.0.js"></script>
+    <script src="../Scripts/DbStructure.js"></script>
+    <script src="../Scripts/common.js"></script>
+    <style>
+        table {
+            border: 1px solid black;
+        }
+
+        table tr td,
+        th {
+            border: 1px solid black;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        #trSearch input {
+            border: 1px solid #26a69a;
+            margin: 0px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+    </style>
+    <script src="index.js"></script>
+</body>
+
+</html>
