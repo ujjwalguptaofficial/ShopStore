@@ -152,7 +152,6 @@ function insertShoppingList(orderId) {
             Return: true
         }, function (values) {
             if (values.length > 0) {
-                DialogBox.alert('Successfully added');
                 window.location.href = "print.html?order_id=" + orderId;
             } else {
                 DialogBox.alert('Error Occured');
