@@ -102,7 +102,7 @@ function submit() {
                 DialogBox.confirm('No Customer Found, do you want to create one ?', function (
                     result) {
                     if (result) {
-                        window.location.href = 'Customer/Add.html?email=' + TextInput.val();
+                        window.location.href = 'Customer/add.html?email=' + TextInput.val();
                     }
                 });
             }
