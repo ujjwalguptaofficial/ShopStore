@@ -55,7 +55,7 @@ function save() {
             if (rowsCount > 0) {
                 DialogBox.alert('Successfully Added');
                 if (getQsValueByName('email') != null) {
-                    window.location.href = "../index.html?email=" + ECustomerEmail.val();
+                    window.location.href = "../index.html?email=" + CustomerEmail.val();
                 }
                 $('form')[0].reset();
             }
