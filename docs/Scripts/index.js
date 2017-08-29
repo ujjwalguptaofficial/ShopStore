@@ -144,22 +144,51 @@ function CreateReceipt() {
 }
 
 function insertShoppingList(orderId) {
-    var ShoppingList = getShoppingList(orderId);
+    var ShoppingList = getShoppingList(orderId),
+        Length = ShoppingList.length;
     if (ShoppingList.length > 0) {
-        Db.DbConnection.insert({
-            Into: 'OrderDetail',
-            Values: ShoppingList,
-            Return: true
-        }, function (values) {
-            if (values.length > 0) {
-                window.location.href = "print.html?order_id=" + orderId;
-            } else {
+        ShoppingList.forEach(function (item, index) {
+            //substract stock unit
+            Db.DbConnection.update({
+                In: 'Stock',
+                Where: {
+                    ItemId: item.ItemId
+                },
+                Set: {
+                    Unit: {
+                        '-': item.Quantity
+                    }
+                },
+                OnSuccess: function (rowsUpdated) {
+                    if (rowsUpdated <= 0) {
+                        JsStore.stopExecution();
+                    }
+                },
+                OnError: function (error) {
+                    JsStore.stopExecution();
+                    console.log(error);
+                    DialogBox.alert('Error Occured');
+                }
+            }).
+            insert({
+                Into: 'OrderDetail',
+                Values: [item]
+            }, function (rowsInserted) {
+                if (rowsInserted > 0) {
+                    if (index + 1 == Length) {
+                        window.location.href = "print.html?order_id=" + orderId;
+                    }
+                } else {
+                    //this will stop further code execution
+                    JsStore.stopExecution();
+                    DialogBox.alert('Error Occured');
+                }
+            }, function (error) {
+                JsStore.stopExecution();
+                console.log(error);
                 DialogBox.alert('Error Occured');
-            }
-        }, function (error) {
-            console.log(error);
-            DialogBox.alert('Error Occured');
-        })
+            })
+        });
     }
 
 }
