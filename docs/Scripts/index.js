@@ -1,6 +1,7 @@
 var IsIndex = true,
     RowInserted = false,
-    IsErrorOccured = false;
+    IsValidQuantity = true,
+    IsValidItemId = true;
 
 function onPageLoaded() {
     var Email = getQsValueByName('email');
@@ -16,26 +17,40 @@ function onPageLoaded() {
             isQuantityValid(TextBox);
         }
     })
-    insertRow();
+    insertRow(true);
 }
 
 function isQuantityValid(textbox) {
     var TdList = textbox.parents().eq(1).find('td'),
-        QuantityInStock = Number(TdList.eq(0).attr('data-quantity')),
+        TdItemId = TdList.eq(0),
+        QuantityInStock = Number(TdItemId.attr('data-quantity')),
         RequiredQuanity = Number(textbox.val());
-    if (QuantityInStock >= RequiredQuanity) {
-        textbox.next().html('<i class="material-icons">check</i>');
-        var Total = Number(TdList.eq(2).text()) * RequiredQuanity;
-        TdList.eq(4).text(Total);
-        var TotalAmount = 0;
-        $('#tblBilling tbody tr td:last-child').each(function () {
-            TotalAmount += Number($(this).text());
-        })
-        $('#totalAmount').text(TotalAmount);
-        IsErrorOccured = false;
+    if (TdItemId.find('input').val().length > 0) {
+        if (RequiredQuanity == 0) {
+            IsValidQuantity = false;
+            textbox.next().html('<i class="material-icons">close</i>').attr('Title', 'Zero Quantity is not allowed');
+        } else if (QuantityInStock >= RequiredQuanity) {
+            textbox.next().html('<i class="material-icons">check</i>').attr('Title', 'Valid Quantity');
+            var Total = Number(TdList.eq(2).text()) * RequiredQuanity;
+            TdList.eq(4).text(Total);
+            var TotalAmount = 0;
+            $('#tblBilling tbody tr td:last-child').each(function () {
+                TotalAmount += Number($(this).text());
+            })
+            $('#totalAmount').text(TotalAmount);
+            if (!IsValidQuantity) {
+                IsValidQuantity = true;
+                setTimeout(function () {
+                    insertRow();
+                }, 100);
+            }
+        } else {
+            IsValidQuantity = false;
+            textbox.next().html('<i class="material-icons">close</i>').attr('Title', 'Quantity does not exist in stock');
+        }
     } else {
-        IsErrorOccured = true;
-        textbox.next().html('<i class="material-icons">close</i>');
+        IsValidQuantity = false;
+        textbox.next().html('<i class="material-icons">close</i>').attr('Title', 'No ItemId');
     }
 }
 
@@ -49,17 +64,17 @@ function isItemValid(textbox) {
         var Tr = textbox.parents().eq(1),
             TdList = Tr.find('td');
         if (items.length > 0) {
-            textbox.next().html('<i class="material-icons">check</i>');
+            textbox.next().html('<i class="material-icons">check</i>').attr('Title', 'Valid ItemId');
             TdList.eq(0).attr('data-quantity', items[0].Unit);
             TdList.eq(1).text(items[0].ItemName);
             TdList.eq(2).text(items[0].Price);
             if (!Tr.next().html()) {
                 insertRow();
             }
-            IsErrorOccured = false;
+            IsValidItemId = true;
         } else {
-            IsErrorOccured = true;
-            textbox.next().html('<i class="material-icons">close</i>');
+            IsValidItemId = false;
+            textbox.next().html('<i class="material-icons">close</i>').attr('Title', 'Invalid ItemId');
             TdList.eq(0).data('quantity', '');
             TdList.eq(1).text("");
             TdList.eq(2).text("");
@@ -67,14 +82,31 @@ function isItemValid(textbox) {
     })
 }
 
-function insertRow() {
-    var Html = '<tr>' +
-        '<td><input type="text" class="item-id"/><span class="Hide"></span></td>' +
-        '<td></td><td></td>' +
-        '<td><input type="number" min="1" class="item-quantity"/><span class="Hide"></span></td>' +
-        '<td></td>' +
-        '</tr>';
-    $('#tblBilling tbody').append(Html) //+= Html;
+function insertRow(isFirstRow) {
+    var insertRowInternal = function () {
+        var Html = '<tr>' +
+            '<td><input type="text" class="item-id"/><span class="Hide"></span></td>' +
+            '<td></td><td></td>' +
+            '<td><input type="number" min="1" class="item-quantity"/><span class="Hide"></span></td>' +
+            '<td></td>' +
+            '</tr>';
+        $('#tblBilling tbody').append(Html);
+    }
+    if (isFirstRow) {
+        insertRowInternal();
+    } else if (IsValidItemId && IsValidQuantity) {
+        // $('#tblBilling tbody tr:last-child td:first-child input').val().length > 0
+        var Rows = $('#tblBilling tbody tr'),
+            LastRows = Rows.last();
+        if (Rows.length > 1) {
+            isQuantityValid(LastRows.prev().find('td:nth-child(4) input'));
+            if (IsValidQuantity && LastRows.find('td:first-child input').val().length > 0) {
+                insertRowInternal();
+            }
+        } else {
+            insertRowInternal();
+        }
+    }
 }
 
 function submit() {
@@ -115,7 +147,7 @@ function submit() {
 }
 
 function CreateReceipt() {
-    if (!IsErrorOccured) {
+    if (IsValidItemId && IsValidQuantity) {
         var CustomerId = $('#divCustomerDetail').attr('data-customerId'),
             Value = {
                 CustomerId: Number(CustomerId),
