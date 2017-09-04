@@ -1,0 +1,21 @@
+table {
+    border: 1px solid black;
+}
+
+table tr td,
+th {
+    border: 1px solid black;
+    text-align: center;
+    cursor: pointer;
+}
+
+.display-block {
+    display: block !important;
+}
+
+#trSearch input {
+    border: 1px solid #26a69a;
+    margin: 0px;
+    text-align: center;
+    box-sizing: border-box;
+}
