@@ -68,21 +68,26 @@ function isItemValid(textbox) {
             TdList.eq(0).attr('data-quantity', items[0].Unit);
             TdList.eq(1).text(items[0].ItemName);
             TdList.eq(2).text(items[0].Price);
-            if (!Tr.next().html()) {
-                insertRow();
-            }
             IsValidItemId = true;
+            if (!Tr.next().html()) {
+                insertRow(false, textbox);
+            }
+
         } else {
             IsValidItemId = false;
             textbox.next().html('<i class="material-icons">close</i>').attr('Title', 'Invalid ItemId');
-            TdList.eq(0).data('quantity', '');
+            TdList.eq(0).attr('data-quantity', '');
             TdList.eq(1).text("");
             TdList.eq(2).text("");
+            var InputQuantity = TdList.eq(3).find('input');
+            if (InputQuantity.val().length > 0) {
+                isQuantityValid(InputQuantity);
+            }
         }
     })
 }
 
-function insertRow(isFirstRow) {
+function insertRow(isFirstRow, textbox) {
     var insertRowInternal = function () {
         var Html = '<tr>' +
             '<td><input type="text" class="item-id"/><span class="Hide"></span></td>' +
@@ -94,7 +99,7 @@ function insertRow(isFirstRow) {
     }
     if (isFirstRow) {
         insertRowInternal();
-    } else if (IsValidItemId && IsValidQuantity) {
+    } else if (IsValidItemId && IsValidQuantity) { //Quantity is changed from invalid to valid
         // $('#tblBilling tbody tr:last-child td:first-child input').val().length > 0
         var Rows = $('#tblBilling tbody tr'),
             LastRows = Rows.last();
@@ -106,6 +111,12 @@ function insertRow(isFirstRow) {
         } else {
             insertRowInternal();
         }
+    } else if (IsValidItemId) {
+        var CurrentRow = textbox.parents().eq(1);
+        if (CurrentRow.next().length == 0) {
+            insertRowInternal();
+        }
+        isQuantityValid(CurrentRow.find('td:nth-child(4) input'));
     }
 }
 

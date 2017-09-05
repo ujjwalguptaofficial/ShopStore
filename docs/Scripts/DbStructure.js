@@ -144,8 +144,8 @@ function getDbStructure() {
     return DataBase;
 }
 
-function insertCustomers() {
-    $.getJSON("Customer/Customers.json", function (results) {
+function insertCustomers(fileUrl) {
+    $.getJSON(fileUrl, function (results) {
         setStatusMsg('Inserting data into table Customers');
         Db.DbConnection.insert({
             Into: 'Customer',
@@ -163,8 +163,8 @@ function insertCustomers() {
     })
 }
 
-function insertProducts() {
-    $.getJSON("Stock/Stocks.json", function (results) {
+function insertProducts(fileUrl) {
+    $.getJSON(fileUrl, function (results) {
         setStatusMsg('Inserting data into table Products');
         Db.DbConnection.insert({
             Into: 'Stock',
@@ -184,12 +184,18 @@ function onDataInserted() {
     if (TableInsertCount == 2) {
         setStatusMsg('All data inserted');
         DialogBox.closeModal();
+        window.location.reload();
     }
 }
 
 function insertIntoDb() {
-    insertCustomers();
-    insertProducts();
+    if (typeof IsIndex != 'undefined' && IsIndex) {
+        insertCustomers("Customer/Customers.json");
+        insertProducts("Stock/Stocks.json");
+    } else {
+        insertCustomers("../Customer/Customers.json");
+        insertProducts("../Stock/Stocks.json");
+    }
 }
 
 function setStatusMsg(msg) {
