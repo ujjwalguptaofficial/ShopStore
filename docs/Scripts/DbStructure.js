@@ -17,9 +17,11 @@ var TableInsertCount = 0,
                         insertIntoDb();
                     }
                     callBack();
+                }, function (err) {
+                    alert(err);
                 });
             } catch (ex) {
-                DialogBox.alert('IndexedDb does not support in browser');
+                alert('IndexedDb does not support in browser');
             }
         },
         deleteDb: function () {

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/** JsStore.js - v1.1.4 - 07/09/2017
+/** JsStore.js - v1.1.5 - 11/09/2017
  * https://github.com/ujjwalguptaofficial/JsStore
  * Copyright (c) 2017 @Ujjwal Gupta; Licensed MIT */ 
 var JsStore;
@@ -36,19 +36,27 @@ var JsStore;
         Occurence["Any"] = "a";
     })(Occurence = JsStore.Occurence || (JsStore.Occurence = {}));
     ;
-})(JsStore || (JsStore = {}));
-var JsStore;
-(function (JsStore) {
+    var WebWorkerStatus;
+    (function (WebWorkerStatus) {
+        WebWorkerStatus["Registered"] = "registerd";
+        WebWorkerStatus["Failed"] = "failed";
+        WebWorkerStatus["NotStarted"] = "not_started";
+    })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
+    ;
     var ConnectionStatus;
     (function (ConnectionStatus) {
         ConnectionStatus["Connected"] = "connected";
         ConnectionStatus["Closed"] = "closed";
         ConnectionStatus["NotStarted"] = "not_started";
+        ConnectionStatus["IndexedDbUndefined"] = "indexeddb_undefined";
     })(ConnectionStatus = JsStore.ConnectionStatus || (JsStore.ConnectionStatus = {}));
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    JsStore.EnableLog = false;
+    JsStore.EnableLog = false, JsStore.Status = {
+        ConStatus: JsStore.ConnectionStatus.NotStarted,
+        LastError: ""
+    };
     JsStore.throwError = function (error) {
         throw error;
     };
@@ -141,20 +149,28 @@ var JsStore;
     /**
     * checks whether db exist or not
     *
-    * @param {string} dbName
+    * @param {DbInfo} dbInfo
     * @param {Function} callback
+    * @param {Function} errCallBack
     */
-    JsStore.isDbExist = function (dbInfo, callback) {
-        var DbName;
-        if (typeof dbInfo == 'string') {
-            JsStore.getDbVersion(dbInfo, function (dbVersion) {
-                callback(Boolean(dbVersion));
-            });
+    JsStore.isDbExist = function (dbInfo, callback, errCallBack) {
+        if (JsStore.Status.ConStatus != JsStore.ConnectionStatus.IndexedDbUndefined) {
+            var DbName;
+            if (typeof dbInfo == 'string') {
+                JsStore.getDbVersion(dbInfo, function (dbVersion) {
+                    callback(Boolean(dbVersion));
+                });
+            }
+            else {
+                JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
+                    callback(dbInfo.Table.Version <= dbVersion);
+                });
+            }
         }
         else {
-            JsStore.getDbVersion(dbInfo.DbName, function (dbVersion) {
-                callback(dbInfo.Table.Version <= dbVersion);
-            });
+            if (errCallBack) {
+                errCallBack(JsStore.Status.LastError);
+            }
         }
     };
     /**
@@ -539,11 +555,11 @@ var JsStore;
                     }
                 };
                 DbRequest.onsuccess = function (event) {
-                    Business.Status.ConStatus = JsStore.ConnectionStatus.Connected;
+                    JsStore.Status.ConStatus = JsStore.ConnectionStatus.Connected;
                     Business.DbConnection = DbRequest.result;
                     Business.DbConnection.onclose = function () {
-                        Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                        Business.Status.LastError = "Connection Closed";
+                        JsStore.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                        JsStore.Status.LastError = "Connection Closed";
                     };
                     Business.DbConnection.onversionchange = function (e) {
                         if (e.newVersion === null) {
@@ -551,11 +567,11 @@ var JsStore;
                         }
                     };
                     Business.DbConnection.onerror = function (e) {
-                        Business.Status.LastError = "Error occured in connection :" + e.target.result;
+                        JsStore.Status.LastError = "Error occured in connection :" + e.target.result;
                     };
                     Business.DbConnection.onabort = function (e) {
-                        Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                        Business.Status.LastError = "Connection aborted";
+                        JsStore.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                        JsStore.Status.LastError = "Connection aborted";
                     };
                     if (onSuccess != null) {
                         onSuccess();
@@ -639,7 +655,7 @@ var JsStore;
                     }
                 };
                 DbDropRequest.onsuccess = function () {
-                    Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                    JsStore.Status.ConStatus = JsStore.ConnectionStatus.Closed;
                     KeyStore.remove('JsStore_' + Business.ActiveDataBase.Name + '_Db_Version');
                     Business.ActiveDataBase.Tables.forEach(function (table) {
                         KeyStore.remove("JsStore_" + Business.ActiveDataBase.Name + "_" + table.Name + "_Version");
@@ -815,11 +831,11 @@ var JsStore;
                         }
                     };
                     DbRequest.onsuccess = function (event) {
-                        Business.Status.ConStatus = JsStore.ConnectionStatus.Connected;
+                        JsStore.Status.ConStatus = JsStore.ConnectionStatus.Connected;
                         Business.DbConnection = DbRequest.result;
                         Business.DbConnection.onclose = function () {
-                            Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                            Business.Status.LastError = "Connection Closed, trying to reconnect";
+                            JsStore.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                            JsStore.Status.LastError = "Connection Closed, trying to reconnect";
                         };
                         Business.DbConnection.onversionchange = function (e) {
                             if (e.newVersion === null) {
@@ -827,11 +843,11 @@ var JsStore;
                             }
                         };
                         Business.DbConnection.onerror = function (e) {
-                            Business.Status.LastError = "Error occured in connection :" + e.target.result;
+                            JsStore.Status.LastError = "Error occured in connection :" + e.target.result;
                         };
                         Business.DbConnection.onabort = function (e) {
-                            Business.Status.ConStatus = JsStore.ConnectionStatus.Closed;
-                            Business.Status.LastError = "Connection Aborted";
+                            JsStore.Status.ConStatus = JsStore.ConnectionStatus.Closed;
+                            JsStore.Status.LastError = "Connection Aborted";
                         };
                         if (onSuccess != null) {
                             onSuccess();
@@ -884,10 +900,6 @@ var JsStore;
 (function (JsStore) {
     var Business;
     (function (Business) {
-        Business.Status = {
-            ConStatus: JsStore.ConnectionStatus.NotStarted,
-            LastError: ""
-        };
         var Main = (function () {
             function Main(onSuccess) {
                 if (onSuccess === void 0) { onSuccess = null; }
@@ -899,16 +911,16 @@ var JsStore;
                         this.executeLogic(request);
                     }
                     else {
-                        if (Business.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
+                        if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
                             this.executeLogic(request);
                         }
-                        else if (Business.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
+                        else if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.NotStarted) {
                             var That = this;
                             setTimeout(function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
-                        else if (Business.Status.ConStatus == JsStore.ConnectionStatus.Closed) {
+                        else if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Closed) {
                             var That = this;
                             this.openDb(Business.ActiveDataBase.Name, function () {
                                 That.checkConnectionAndExecuteLogic(request);
@@ -980,7 +992,7 @@ var JsStore;
                     });
                 };
                 this.closeDb = function () {
-                    if (Business.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
+                    if (JsStore.Status.ConStatus == JsStore.ConnectionStatus.Connected) {
                         Business.DbConnection.close();
                     }
                 };
@@ -1957,25 +1969,34 @@ var JsStore;
                 function Where() {
                     var _this = _super !== null && _super.apply(this, arguments) || this;
                     _this.executeRequest = function (column, value, op) {
-                        var That = this, CursorOpenRequest;
+                        var That = this;
                         value = op ? value[op] : value;
-                        CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
-                        CursorOpenRequest.onsuccess = function (e) {
-                            var Cursor = e.target.result;
-                            if (Cursor) {
-                                if (!That.CheckFlag) {
-                                    ++That.ResultCount;
+                        if (!That.CheckFlag && this.ObjectStore.count) {
+                            var CountRequest = this.ObjectStore.index(column).count(this.getKeyRange(value, op));
+                            CountRequest.onsuccess = function () {
+                                That.ResultCount = CountRequest.result;
+                            };
+                            CountRequest.onerror = function (e) {
+                                That.ErrorOccured = true;
+                                That.onErrorOccured(e);
+                            };
+                        }
+                        else {
+                            var CursorOpenRequest = this.ObjectStore.index(column).openCursor(this.getKeyRange(value, op));
+                            CursorOpenRequest.onsuccess = function (e) {
+                                var Cursor = e.target.result;
+                                if (Cursor) {
+                                    if (That.checkForWhereConditionMatch(Cursor.value)) {
+                                        ++That.ResultCount;
+                                    }
+                                    Cursor.continue();
                                 }
-                                else if (That.checkForWhereConditionMatch(Cursor.value)) {
-                                    ++That.ResultCount;
-                                }
-                                Cursor.continue();
-                            }
-                        };
-                        CursorOpenRequest.onerror = function (e) {
-                            That.ErrorOccured = true;
-                            That.onErrorOccured(e);
-                        };
+                            };
+                            CursorOpenRequest.onerror = function (e) {
+                                That.ErrorOccured = true;
+                                That.onErrorOccured(e);
+                            };
+                        }
                     };
                     _this.executeWhereLogic = function () {
                         for (var Column in this.Query.Where) {
@@ -2399,6 +2420,10 @@ var JsStore;
                                             That.ErrorOccured = true;
                                             That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
                                         }
+                                        else if (column.AutoIncrement && typeof value != 'number') {
+                                            That.ErrorOccured = true;
+                                            That.Error = JsStore.Utils.getError(JsStore.ErrorType.BadDataType, { ColumnName: column.Name });
+                                        }
                                     };
                                     executeCheck(suppliedValue[column.Name]);
                                 }
@@ -2688,14 +2713,7 @@ var JsStore;
 })(JsStore || (JsStore = {}));
 var JsStore;
 (function (JsStore) {
-    var WebWorkerStatus;
-    (function (WebWorkerStatus) {
-        WebWorkerStatus["Registered"] = "registerd";
-        WebWorkerStatus["Failed"] = "failed";
-        WebWorkerStatus["NotStarted"] = "not_started";
-    })(WebWorkerStatus = JsStore.WebWorkerStatus || (JsStore.WebWorkerStatus = {}));
-    ;
-    JsStore.WorkerStatus = WebWorkerStatus.NotStarted;
+    JsStore.WorkerStatus = JsStore.WebWorkerStatus.NotStarted;
     var CodeExecutionHelper = (function () {
         function CodeExecutionHelper() {
             this.RequestQueue = [];
@@ -2705,7 +2723,7 @@ var JsStore;
                 if (JsStore.EnableLog) {
                     console.log("request pushed:" + request.Name);
                 }
-                if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != WebWorkerStatus.NotStarted) {
+                if (this.RequestQueue.length == 1 && JsStore.WorkerStatus != JsStore.WebWorkerStatus.NotStarted) {
                     this.executeCode();
                 }
             };
@@ -2719,7 +2737,7 @@ var JsStore;
                         Name: this.RequestQueue[0].Name,
                         Query: this.RequestQueue[0].Query
                     };
-                    if (JsStore.WorkerStatus == WebWorkerStatus.Registered) {
+                    if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.Registered) {
                         this.executeCodeUsingWorker(Request);
                     }
                     else {
@@ -2763,7 +2781,7 @@ var JsStore;
             };
             this.onWorkerFailed = function () {
                 console.warn('JsStore is not runing in web worker');
-                JsStore.WorkerStatus = WebWorkerStatus.Failed;
+                JsStore.WorkerStatus = JsStore.WebWorkerStatus.Failed;
                 this.executeCode();
             };
             this.createWorker = function () {
@@ -2777,8 +2795,8 @@ var JsStore;
                                 That.onMessageFromWorker(msg);
                             };
                             setTimeout(function () {
-                                if (JsStore.WorkerStatus != WebWorkerStatus.Failed) {
-                                    JsStore.WorkerStatus = WebWorkerStatus.Registered;
+                                if (JsStore.WorkerStatus != JsStore.WebWorkerStatus.Failed) {
+                                    JsStore.WorkerStatus = JsStore.WebWorkerStatus.Registered;
                                 }
                                 That.executeCode();
                             }, 100);
@@ -3056,7 +3074,10 @@ var KeyStore;
                 self.postMessage('message:WorkerFailed');
             }
             else {
-                throw 'Your browser doesnot support IndexedDb';
+                JsStore.Status = {
+                    ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
+                    LastError: 'Your browser doesnot support IndexedDb'
+                };
             }
         };
         return Utils;
@@ -3307,6 +3328,12 @@ var KeyStore;
             function InitDb(dbName, tableName, onSuccess, onError) {
                 var That = this, DbRequest = self.indexedDB.open(dbName, 1);
                 DbRequest.onerror = function (event) {
+                    if (event.target.error.name == 'InvalidStateError') {
+                        JsStore.Status = {
+                            ConStatus: JsStore.ConnectionStatus.IndexedDbUndefined,
+                            LastError: 'IndexedDb is blocked'
+                        };
+                    }
                     if (onError != null) {
                         onError(event.target.error);
                     }
@@ -3369,14 +3396,13 @@ var KeyStore;
                             var That = this;
                             setTimeout(function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
                         else if (Business.Status.ConStatus == KeyStore.ConnectionStatus.Closed) {
                             var That = this;
-                            this.createDb(KeyStore.TableName);
-                            setTimeout(function () {
+                            this.createDb(KeyStore.TableName, function () {
                                 That.checkConnectionAndExecuteLogic(request);
-                            }, 50);
+                            }, 100);
                         }
                     }
                 };
@@ -3521,4 +3547,4 @@ var KeyStore;
     };
 })(KeyStore || (KeyStore = {}));
 KeyStore.init();
-//# sourceMappingURL=JsStore-1.1.4.js.map
+//# sourceMappingURL=JsStore-1.1.5.js.map
