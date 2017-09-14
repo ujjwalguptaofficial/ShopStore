@@ -4,25 +4,27 @@ var TableInsertCount = 0,
         initiate: function (callBack) {
             var DbName = 'Shop',
                 That = this;
-            try {
-                JsStore.isDbExist(DbName, function (isExist) {
-                    if (isExist) {
-                        console.log('Db exist');
-                        That.DbConnection = new JsStore.Instance(DbName);
-                    } else {
-                        console.log('Db not exist');
-                        createModal('Please wait - we are configuring editor for first use.');
-                        setStatusMsg('Creating Database');
-                        That.DbConnection = new JsStore.Instance().createDb(getDbStructure());
-                        insertIntoDb();
-                    }
-                    callBack();
-                }, function (err) {
-                    alert(err);
-                });
-            } catch (ex) {
-                alert('IndexedDb does not support in browser');
-            }
+            JsStore.isDbExist({
+                DbName: DbName,
+                Table: {
+                    Name: 'Order',
+                    Version: 2
+                }
+            }, function (isExist) {
+                if (isExist) {
+                    console.log('Db exist');
+                    That.DbConnection = new JsStore.Instance(DbName);
+                } else {
+                    console.log('Db not exist');
+                    createModal('Please wait - we are configuring editor for first use.');
+                    setStatusMsg('Creating Database');
+                    That.DbConnection = new JsStore.Instance().createDb(getDbStructure());
+                    insertIntoDb();
+                }
+                callBack();
+            }, function (err) {
+                alert(err);
+            });
         },
         deleteDb: function () {
             if (this.DbConnection != null) {
@@ -137,11 +139,10 @@ function getDbStructure() {
                 DataType: 'number'
             }, {
                 Name: "Date",
-                Default: new Date().toISOString().slice(0, 10),
                 NotNull: true,
                 DataType: 'string'
             }],
-            Version: 1
+            Version: 2
         },
         DataBase = {
             Name: "Shop",

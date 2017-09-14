@@ -162,7 +162,8 @@ function CreateReceipt() {
         var CustomerId = $('#divCustomerDetail').attr('data-customerId'),
             Value = {
                 CustomerId: Number(CustomerId),
-                Total: Number($('#totalAmount').text())
+                Total: Number($('#totalAmount').text()),
+                Date: new Date().toISOString().slice(0, 10)
             };
         Db.DbConnection.insert({
             Into: 'Order',
@@ -208,7 +209,6 @@ function insertShoppingList(orderId) {
                     }
                 },
                 OnError: function (error) {
-                    JsStore.stopExecution();
                     console.log(error);
                     DialogBox.alert('Error Occured');
                 }
@@ -222,8 +222,6 @@ function insertShoppingList(orderId) {
                         window.location.href = "print.html?order_id=" + orderId;
                     }
                 } else {
-                    //this will stop further code execution
-                    JsStore.stopExecution();
                     DialogBox.alert('Error Occured');
                 }
             }, function (error) {
