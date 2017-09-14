@@ -1,4 +1,5 @@
 var TableInsertCount = 0,
+    NoofTables = 0,
     Db = {
         DbConnection: null,
         initiate: function (callBack) {
@@ -8,7 +9,7 @@ var TableInsertCount = 0,
                 DbName: DbName,
                 Table: {
                     Name: 'Order',
-                    Version: 2
+                    Version: 4
                 }
             }, function (isExist) {
                 if (isExist) {
@@ -18,8 +19,9 @@ var TableInsertCount = 0,
                     console.log('Db not exist');
                     createModal('Please wait - we are configuring editor for first use.');
                     setStatusMsg('Creating Database');
-                    That.DbConnection = new JsStore.Instance().createDb(getDbStructure());
-                    insertIntoDb();
+                    That.DbConnection = new JsStore.Instance().createDb(getDbStructure(), function (tablesCreated) {
+                        insertIntoDb(tablesCreated);
+                    });
                 }
                 callBack();
             }, function (err) {
@@ -98,7 +100,8 @@ function getDbStructure() {
                     Name: 'Country',
                     DataType: 'string'
                 }
-            ]
+            ],
+            Version: 2
         },
         OrderDetail = {
             Name: "OrderDetail",
@@ -188,20 +191,35 @@ function insertProducts(fileUrl) {
 
 function onDataInserted() {
     ++TableInsertCount;
-    if (TableInsertCount == 2) {
+    if (TableInsertCount == NoofTables) {
         setStatusMsg('All data inserted');
         DialogBox.closeModal();
         window.location.reload();
     }
 }
 
-function insertIntoDb() {
+function insertIntoDb(tablesCreated) {
     if (typeof IsIndex != 'undefined' && IsIndex) {
-        insertCustomers("Customer/Customers.json");
-        insertProducts("Stock/Stocks.json");
+        if (tablesCreated.indexOf('Customer') >= 0) {
+            ++NoofTables;
+            insertCustomers("Customer/Customers.json");
+        }
+        if (tablesCreated.indexOf('Stock') >= 0) {
+            ++NoofTables;
+            insertProducts("Stock/Stocks.json");
+        }
     } else {
-        insertCustomers("../Customer/Customers.json");
-        insertProducts("../Stock/Stocks.json");
+        if (tablesCreated.indexOf('Customer') >= 0) {
+            ++NoofTables;
+            insertCustomers("../Customer/Customers.json");
+        }
+        if (tablesCreated.indexOf('Stock') >= 0) {
+            ++NoofTables;
+            insertProducts("../Stock/Stocks.json");
+        }
+    }
+    if (NoofTables.length > 0) {
+        DialogBox.closeModal();
     }
 }
 
