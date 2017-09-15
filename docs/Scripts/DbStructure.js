@@ -9,7 +9,7 @@ var TableInsertCount = 0,
                 DbName: DbName,
                 Table: {
                     Name: 'Order',
-                    Version: 4
+                    Version: 2
                 }
             }, function (isExist) {
                 if (isExist) {
