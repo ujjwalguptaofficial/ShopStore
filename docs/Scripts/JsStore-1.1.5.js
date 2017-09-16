@@ -2869,6 +2869,7 @@ var JsStore;
     var Instance = (function (_super) {
         __extends(Instance, _super);
         function Instance(dbName) {
+            if (dbName === void 0) { dbName = null; }
             var _this = _super.call(this) || this;
             if (JsStore.WorkerStatus == JsStore.WebWorkerStatus.NotStarted) {
                 JsStore.Utils.setDbType();
@@ -2897,6 +2898,7 @@ var JsStore;
          * @memberOf Main
          */
         Instance.prototype.createDb = function (dataBase, onSuccess, onError) {
+            if (onSuccess === void 0) { onSuccess = null; }
             if (onError === void 0) { onError = null; }
             this.prcoessExecutionOfCode({
                 Name: 'create_db',
